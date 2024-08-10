@@ -16,9 +16,7 @@ function App() {
       <li className="nav-item d-none d-sm-inline-block">
         <a href="index3.html" className="nav-link">Home</a>
       </li>
-      <li className="nav-item d-none d-sm-inline-block">
-        <a href="#" className="nav-link">Contact</a>
-      </li>
+      
     </ul>
 
     <ul className="navbar-nav ml-auto">
@@ -57,42 +55,13 @@ function App() {
                   Brad Diesel
                   <span className="float-right text-sm text-danger"><i className="fas fa-star"></i></span>
                 </h3>
-                <p className="text-sm">Call me whenever you can...</p>
+                <p className="text-sm">Call me </p>
                 <p className="text-sm text-muted"><i className="far fa-clock mr-1"></i> 4 Hours Ago</p>
               </div>
             </div>
            
           </a>
-          <div className="dropdown-divider"></div>
-          <a href="#" className="dropdown-item">
-            <div className="media">
-              <img src="dist/img/user8-128x128.jpg" alt="User Avatar" className="img-size-50 img-circle mr-3" />
-              <div className="media-body">
-                <h3 className="dropdown-item-title">
-                  John Pierce
-                  <span className="float-right text-sm text-muted"><i className="fas fa-star"></i></span>
-                </h3>
-                <p className="text-sm">I got your message bro</p>
-                <p className="text-sm text-muted"><i className="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-           
-          </a>
-          <div className="dropdown-divider"></div>
-          <a href="#" className="dropdown-item">
-            <div className="media">
-              <img src="dist/img/user3-128x128.jpg" alt="User Avatar" className="img-size-50 img-circle mr-3" />
-              <div className="media-body">
-                <h3 className="dropdown-item-title">
-                  Nora Silvester
-                  <span className="float-right text-sm text-warning"><i className="fas fa-star"></i></span>
-                </h3>
-                <p className="text-sm">The subject goes here</p>
-                <p className="text-sm text-muted"><i className="far fa-clock mr-1"></i> 4 Hours Ago</p>
-              </div>
-            </div>
-           
-          </a>
+         
           <div className="dropdown-divider"></div>
           <a href="#" className="dropdown-item dropdown-footer">See All Messages</a>
         </div>
@@ -109,17 +78,7 @@ function App() {
           <a href="#" className="dropdown-item">
             <i className="fas fa-envelope mr-2"></i> 4 new messages
             <span className="float-right text-muted text-sm">3 mins</span>
-          </a>
-          <div className="dropdown-divider"></div>
-          <a href="#" className="dropdown-item">
-            <i className="fas fa-users mr-2"></i> 8 friend requests
-            <span className="float-right text-muted text-sm">12 hours</span>
-          </a>
-          <div className="dropdown-divider"></div>
-          <a href="#" className="dropdown-item">
-            <i className="fas fa-file mr-2"></i> 3 new reports
-            <span className="float-right text-muted text-sm">2 days</span>
-          </a>
+          </a>         
           <div className="dropdown-divider"></div>
           <a href="#" className="dropdown-item dropdown-footer">See All Notifications</a>
         </div>
@@ -140,7 +99,7 @@ function App() {
   <aside className="main-sidebar sidebar-dark-primary elevation-4">
   
     <a href="index3.html" className="brand-link">
-      <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" className="brand-image img-circle elevation-3"  />
+      <img src="./assets/dist/img/AdminLTELogo.png" alt="AdminLTE Logo" className="brand-image img-circle elevation-3"  />
       <span className="brand-text font-weight-light">AdminLTE 3</span>
     </a>
 
@@ -148,7 +107,7 @@ function App() {
     <div className="sidebar">
       <div className="user-panel mt-3 pb-3 mb-3 d-flex">
         <div className="image">
-          <img src="dist/img/user2-160x160.jpg" className="img-circle elevation-2" alt="User Image" />
+          <img src="./assets/dist/img/user2-160x160.jpg" className="img-circle elevation-2" alt="User Image" />
         </div>
         <div className="info">
           <a href="#" className="d-block">Alexander Pierce</a>
