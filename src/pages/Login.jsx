@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import useAuth from '../../hooks/useAuth';
 
+import axios from 'axios';
+
 import LoginPageWrapper from "../components/layouts/LoginPageWrapper";
 
 function Login() {
