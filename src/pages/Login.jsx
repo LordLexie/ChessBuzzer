@@ -22,6 +22,26 @@ function Login() {
     setLogin({ ...loginInput, [e.target.name]: e.target.value })
   }
 
+  const togglePassword=()=>{
+    
+    const myElement = document.getElementById("password");
+    const attribute = myElement.getAttribute("type");
+
+    const eye = document.getElementById("eye");
+
+    if(attribute == "password")
+    {
+        myElement.setAttribute("type","text")
+        eye.className = "fa fa-eye-slash"
+    }
+    else
+    {
+        myElement.setAttribute("type","password")
+        eye.className = "fa fa-eye"
+    }
+
+}
+
   return (
     <LoginPageWrapper>
       <div className="card card-outline card-primary">
@@ -33,7 +53,7 @@ function Login() {
 
           <form action="../../index3.html" method="post">
             <div className="input-group mb-3">
-              <input type="email" className="form-control" placeholder="Email" />
+              <input type="email" className="form-control" placeholder="Email" id="email"/>
               <div className="input-group-append">
                 <div className="input-group-text">
                   <span className="fas fa-envelope"></span>
@@ -41,10 +61,10 @@ function Login() {
               </div>
             </div>
             <div className="input-group mb-3">
-              <input type="password" className="form-control" placeholder="Password" />
+              <input type="password" className="form-control" placeholder="Password" id="password"/>
               <div className="input-group-append">
                 <div className="input-group-text">
-                  <span className="fas fa-lock"></span>
+                  <span className="fa fa-eye" id="eye" onClick={togglePassword}></span>
                 </div>
               </div>
             </div>
