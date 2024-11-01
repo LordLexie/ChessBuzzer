@@ -19,7 +19,7 @@ function Sidebar() {
                     </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li className="nav-item">
                     <a href="#" className="nav-link">
                     <i className="nav-icon far fa-circle text-success"></i>
                     <p className="text">Transactions</p>
