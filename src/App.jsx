@@ -17,8 +17,8 @@ axios.defaults.headers.post['Accept'] = 'application/json';
 axios.defaults.withCredentials = true;
 
 axios.interceptors.request.use(function (config) {
-  //const token = Cookies.get("Authorization");
-  //config.headers.Authorization = token ? `Authorization=${token}` : '';
+  const token = Cookies.get("Authorization");
+  config.headers.Authorization = token ? `Authorization=${token}` : '';
   return config;
 });
 
