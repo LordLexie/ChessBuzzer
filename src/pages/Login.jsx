@@ -53,9 +53,14 @@ function Login() {
 
     axios.post(`api/v1/auth/login`, data).then(res => {
 
-      
+
       if (res.data.status === "Ok") {
-       // navigate("/dashboard")
+        Cookies.set("Authorization",res.data.data)
+        const decoded_token = jwtDecode(res.data.data);
+
+        localStorage.setItem('username', decoded_token.username)
+        localStorage.setItem('avatar', decoded_token.avatar)
+        navigate("/dashboard")
       }
       else if (res.data.status === 401) {
         swal('Warning', res.data.message, "warning")
