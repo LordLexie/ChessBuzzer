@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
+import Cookies from 'js-cookie';
+import { jwtDecode } from "jwt-decode";
 
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import LoginPageWrapper from "../components/layouts/LoginPageWrapper";
 
@@ -22,25 +24,49 @@ function Login() {
     setLogin({ ...loginInput, [e.target.name]: e.target.value })
   }
 
-  const togglePassword=()=>{
-    
+
+  const togglePassword = () => {
+
     const myElement = document.getElementById("password");
     const attribute = myElement.getAttribute("type");
 
     const eye = document.getElementById("eye");
 
-    if(attribute == "password")
-    {
-        myElement.setAttribute("type","text")
-        eye.className = "fa fa-eye-slash"
+    if (attribute == "password") {
+      myElement.setAttribute("type", "text")
+      eye.className = "fa fa-eye-slash"
     }
-    else
-    {
-        myElement.setAttribute("type","password")
-        eye.className = "fa fa-eye"
+    else {
+      myElement.setAttribute("type", "password")
+      eye.className = "fa fa-eye"
     }
 
-}
+  }
+
+  const loginSubmit = (e) => {
+    e.preventDefault();
+
+    const data = {
+      email: loginInput.email,
+      password: loginInput.password
+    }
+
+    axios.post(`api/v1/auth/login`, data).then(res => {
+
+      
+      if (res.data.status === "Ok") {
+       // navigate("/dashboard")
+      }
+      else if (res.data.status === 401) {
+        swal('Warning', res.data.message, "warning")
+      }
+      else {
+        setLogin({ ...loginInput, error_list: res.data.validation_errors })
+      }
+
+    })
+
+  }
 
   return (
     <LoginPageWrapper>
@@ -51,9 +77,9 @@ function Login() {
         <div className="card-body">
           <p className="login-box-msg">Sign in to start your session</p>
 
-          <form action="../../index3.html" method="post">
+          <form onSubmit={loginSubmit}>
             <div className="input-group mb-3">
-              <input type="email" className="form-control" placeholder="Email" id="email"/>
+              <input type="email" className="form-control" placeholder="Email" name="email" id="email" onChange={handleInput} value={loginInput.email} />
               <div className="input-group-append">
                 <div className="input-group-text">
                   <span className="fas fa-envelope"></span>
@@ -61,7 +87,7 @@ function Login() {
               </div>
             </div>
             <div className="input-group mb-3">
-              <input type="password" className="form-control" placeholder="Password" id="password"/>
+              <input type="password" className="form-control" placeholder="Password" name="password" id="password" onChange={handleInput} value={loginInput.password} />
               <div className="input-group-append">
                 <div className="input-group-text">
                   <span className="fa fa-eye" id="eye" onClick={togglePassword}></span>
