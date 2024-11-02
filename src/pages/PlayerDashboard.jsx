@@ -111,22 +111,22 @@ function PlayerDashboard() {
                     <table className="table table-hover text-nowrap">
                       <thead>
                         <tr>
-                          <th>ID</th>
-                          <th>Date</th>
-                          <th>Opponent</th>
-                          <th>Amount</th>
-                          <th>Results</th>
-                          <th>Action</th>
+                          <th style={{ fontSize: '15px' }} >#</th>
+                          <th style={{ fontSize: '15px' }}>Date</th>
+                          <th style={{ fontSize: '15px' }}>Challenge</th>
+                          <th style={{ fontSize: '15px' }}>Prize Money</th>
+                          <th style={{ fontSize: '15px' }}>Status</th>
+                          <th style={{ fontSize: '15px' }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td>11-7-2014</td>
-                          <td>Alexander Pierce</td>
-                          <td>1,200</td>
-                          <td><span className="tag tag-warning">Pending</span></td>
-                          <td>Edit</td>
+                        <tr >
+                          <td style={{ fontSize: '14px' }} >1</td>
+                          <td style={{ fontSize: '14px' }}>11-7-2014</td>
+                          <td style={{ fontSize: '14px' }} >1ff9f787-4d4e-4319-b0a5-58bcea075ab3</td>
+                          <td style={{ fontSize: '14px' }}>1,200</td>
+                          <td style={{ fontSize: '14px' }}><span className="tag tag-warning">Pending</span></td>
+                          <td style={{ fontSize: '14px' }}>Edit</td>
                         </tr>
                       </tbody>
                     </table>
