@@ -11,6 +11,8 @@ function PlayerDashboard() {
     avatar: '../assets/dist/img/user1-128x128.jpg',
   });
 
+  const [userChallenges,setChallenges] = useState([])
+
   useEffect(() => {
 
     setUserDetails({
