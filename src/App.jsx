@@ -18,7 +18,7 @@ axios.defaults.withCredentials = true;
 
 axios.interceptors.request.use(function (config) {
   const token = Cookies.get("Authorization");
-  config.headers.Authorization = token ? `Authorization=${token}` : '';
+  config.headers.Authorization = token ? `${token}` : '';
   return config;
 });
 
