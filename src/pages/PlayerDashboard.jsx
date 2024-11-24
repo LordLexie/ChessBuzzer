@@ -376,6 +376,8 @@ function PlayerDashboard() {
 
       if (res.data.status === "Ok") {
         showAlert("success", "challenge updated")
+        fetchChallenges()
+        fetchWallets()
       }
       else if (res.data.status === 401) {
         // swal('Warning', res.data.message, "warning")
@@ -390,7 +392,7 @@ function PlayerDashboard() {
 
   const displayChallenges = () => {
 
-    
+
 
   }
 
@@ -597,53 +599,53 @@ function PlayerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                      {userChallenges.map((challenge, index) => (
-        <tr key={index}>
-          <td style={{ fontSize: '14px' }} >{index + 1}</td>
-          <td style={{ fontSize: '14px' }}>{FormatTime(challenge.CreatedAt)}</td>
-          <td style={{ fontSize: '14px' }} >{challenge.Description}</td>
-          <td style={{ fontSize: '14px' }}>{challenge.Currency} {challenge.EntryFee}</td>
-          <td style={{ fontSize: '14px' }}>
-            {challenge.Status === 'canceled' ? <><span className='fa fa-times-circle red' ></span> canceled</> : null}
-            {challenge.Status === 'pending' ? <><span className='fa fa-spinner'></span> pending</> : null}
-            {challenge.Status === 'complete' ? <><span className='fa fa-check-circle green'></span> complete</> : null}
-            {challenge.Status === 'active' ? <><span className='fa fa-circle-notch fa-spin green'></span> active</> : null}
-          </td>
+                        {userChallenges.map((challenge, index) => (
+                          <tr key={index}>
+                            <td style={{ fontSize: '14px' }} >{index + 1}</td>
+                            <td style={{ fontSize: '14px' }}>{FormatTime(challenge.CreatedAt)}</td>
+                            <td style={{ fontSize: '14px' }} >{challenge.Description}</td>
+                            <td style={{ fontSize: '14px' }}>{challenge.Currency} {challenge.EntryFee}</td>
+                            <td style={{ fontSize: '14px' }}>
+                              {challenge.Status === 'canceled' ? <><span className='fa fa-times-circle red' ></span> canceled</> : null}
+                              {challenge.Status === 'pending' ? <><span className='fa fa-spinner'></span> pending</> : null}
+                              {challenge.Status === 'complete' ? <><span className='fa fa-check-circle green'></span> complete</> : null}
+                              {challenge.Status === 'active' ? <><span className='fa fa-circle-notch fa-spin green'></span> active</> : null}
+                            </td>
 
-          <td style={{ fontSize: '14px' }}>
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="dropdown-basic" size="sm" >
-                {'action'}
-              </Dropdown.Toggle>
+                            <td style={{ fontSize: '14px' }}>
+                              <Dropdown>
+                                <Dropdown.Toggle variant="secondary" id="dropdown-basic" size="sm" >
+                                  {'action'}
+                                </Dropdown.Toggle>
 
-              <Dropdown.Menu>
-                {(() => {
+                                <Dropdown.Menu>
+                                  {(() => {
 
-                  if (challenge.Status === 'pending') {
-                    if (challenge.AcceptedChallenge == 1) {
-                      return <Dropdown.Item onClick={() => cancelGame(challenge.Challengeid)} > <span className='fa fa-times-circle'></span> Cancel</Dropdown.Item>;
-                    } else {
-                      return (<>
-                        <Dropdown.Item onClick={() => updateGame(challenge.ID, 1)}>Accept</Dropdown.Item>
-                        <Dropdown.Item onClick={() => updateGame(challenge.ID, 3)}>Reject</Dropdown.Item>
-                      </>);
-                    }
-                  } else if (challenge.Status === 'active') {
-                    return (<Dropdown.Item><i class="fa fa-trophy"></i> Claim</Dropdown.Item>)
-                  }
+                                    if (challenge.Status === 'pending') {
+                                      if (challenge.AcceptedChallenge == 1) {
+                                        return <Dropdown.Item onClick={() => cancelGame(challenge.Challengeid)} > <span className='fa fa-times-circle'></span> Cancel</Dropdown.Item>;
+                                      } else {
+                                        return (<>
+                                          <Dropdown.Item onClick={() => updateGame(challenge.ID, 1)}>Accept</Dropdown.Item>
+                                          <Dropdown.Item onClick={() => updateGame(challenge.ID, 3)}>Reject</Dropdown.Item>
+                                        </>);
+                                      }
+                                    } else if (challenge.Status === 'active') {
+                                      return (<Dropdown.Item><i class="fa fa-trophy"></i> Claim</Dropdown.Item>)
+                                    }
 
-                  // If status is not 'pending', return null (no item rendered)
-                  return null;
-                })()}
+                                    // If status is not 'pending', return null (no item rendered)
+                                    return null;
+                                  })()}
 
 
-              </Dropdown.Menu>
-            </Dropdown>
-          </td>
+                                </Dropdown.Menu>
+                              </Dropdown>
+                            </td>
 
-        </tr>
+                          </tr>
 
-      ))}
+                        ))}
                       </tbody>
                     </table>
                   </div>
