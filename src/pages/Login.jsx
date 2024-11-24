@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import useAuth from '../hooks/useAuth';
+import { useState } from 'react';
+import swal from 'sweetalert2';
+// import useAuth from '../hooks/useAuth';
 import Cookies from 'js-cookie';
 import { jwtDecode } from "jwt-decode";
 
 import axios from 'axios';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import LoginPageWrapper from "../components/layouts/LoginPageWrapper";
 
 function Login() {
 
   const navigate = useNavigate();
-  const { setAuth } = useAuth()
 
   const [loginInput, setLogin] = useState({
     email: '',
     password: '',
     error_list: [],
   });
+
+  
 
   const handleInput = (e) => {
     e.persist();
@@ -74,50 +76,62 @@ function Login() {
   }
 
   return (
-    <LoginPageWrapper>
-      <div className="card card-outline card-primary">
-        <div className="card-header text-center">
-          <span className="h2"><b>Chess</b>Buzzer</span>
-        </div>
-        <div className="card-body">
-          <p className="login-box-msg">Sign in to start your session</p>
+     <LoginPageWrapper>
+      <div className="container d-flex align-items-center justify-content-center min-vh-100">
+        <div className="card card-outline card-primary shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
+          <div className="card-header text-center">
+            <span className="h2"><b>Chess</b>Buzzer</span>
+          </div>
+          <div className="card-body">
+            <p className="login-box-msg">Sign in to start your session</p>
 
-          <form onSubmit={loginSubmit}>
-            <div className="input-group mb-3">
-              <input type="email" className="form-control" placeholder="Email" name="email" id="email" onChange={handleInput} value={loginInput.email} />
-              <div className="input-group-append">
-                <div className="input-group-text">
-                  <span className="fas fa-envelope"></span>
+            <form onSubmit={loginSubmit}>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="Email"
+                  name="email"
+                  id="email"
+                  onChange={handleInput}
+                  value={loginInput.email}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">Password</label>
+                <div className="input-group">
+                  <input
+                    type="password"
+                    className="form-control"
+                    placeholder="Password"
+                    name="password"
+                    id="password"
+                    onChange={handleInput}
+                    value={loginInput.password}
+                    required
+                  />
+                  <div className="input-group-append">
+                    <div className="input-group-text">
+                      <span className="fa fa-eye" id="eye" onClick={togglePassword}></span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="input-group mb-3">
-              <input type="password" className="form-control" placeholder="Password" name="password" id="password" onChange={handleInput} value={loginInput.password} />
-              <div className="input-group-append">
-                <div className="input-group-text">
-                  <span className="fa fa-eye" id="eye" onClick={togglePassword}></span>
-                </div>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-8">
-              </div>
-
-              <div className="col-4">
+              <div className="d-grid gap-2">
                 <button type="submit" className="btn btn-primary btn-block">Sign In</button>
               </div>
+            </form>
 
-            </div>
-          </form>
-
-          <p className="mb-1">
-            <a href="forgot-password.html">Forgot my password</a>
-          </p>
-          <p className="mb-0">
-            <a href="register.html" className="text-center">Register</a>
-          </p>
+            <p className="mt-3 mb-1">
+              <a href="forgot-password.html">Forgot my password</a>
+            </p>
+            <p className="mb-0">
+              <Link to="/register" className="text-center">Register</Link>
+            </p>
+          </div>
         </div>
-
       </div>
     </LoginPageWrapper>
   )
