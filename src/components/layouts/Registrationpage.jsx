@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 function RegistrationPage() {
     const [username, setUsername] = useState('');
@@ -7,14 +10,34 @@ function RegistrationPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
             setError('Passwords do not match');
             return;
         }
-        // Handle registration logic here
-        console.log('User registered:', { username, email, password });
+
+        const data = {
+            username,
+            email,
+            password,
+        };
+
+        try {
+            const res = await axios.post('http://127.0.0.1:8888/api/v1/user', data);
+
+            if (res.data.status === 'Ok') {
+                Swal.fire('Success', 'Registration Successful', 'success');
+                navigate('/login');
+            } else {
+                setError(res.data.message || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration Error:', error);
+            setError('Registration Failed. Please try again.');
+        }
     };
 
     return (
