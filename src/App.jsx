@@ -8,7 +8,7 @@ import axios from 'axios';
 import Login from './pages/Login.jsx'
 import PlayerDashboard from './pages/PlayerDashboard.jsx'
 import PrivateRoutes from './components/authentication/PrivateRoutes.jsx'
-import RegistrationPage from './components/layouts/Registrationpage.jsx';
+import RegistrationPage from './pages/Registrationpage.jsx';
 
 axios.defaults.baseURL = "http://127.0.0.1:8888";
 axios.defaults.headers.post['Content-Type'] = 'application/json';

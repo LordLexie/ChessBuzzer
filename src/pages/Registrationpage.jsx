@@ -28,15 +28,19 @@ function RegistrationPage() {
         try {
             const res = await axios.post('http://127.0.0.1:8888/api/v1/user', data);
 
-            if (res.data.status === 'Ok') {
+            if (res.status === 200 && res.data.status === 'OK') {
                 Swal.fire('Success', 'Registration Successful', 'success');
-                navigate('/login');
+                navigate('/');
             } else {
                 setError(res.data.message || 'Registration failed');
             }
         } catch (error) {
-            console.error('Registration Error:', error);
-            setError('Registration Failed. Please try again.');
+            if (error.response && error.response.status === 409) {
+                setError('Username or email already exists');
+            } else {
+                console.error('Registration Error:', error);
+                setError('Registration Failed. Please try again.');
+            }
         }
     };
 
