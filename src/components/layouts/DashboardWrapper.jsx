@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 function DashboardWrapper({ children }) {
 
     return (
@@ -9,4 +11,8 @@ function DashboardWrapper({ children }) {
     )
 }
 
-export default DashboardWrapper
+DashboardWrapper.propTypes = {
+    children: PropTypes.node.isRequired,
+};
+
+export default DashboardWrapper;

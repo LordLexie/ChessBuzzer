@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 function LoginPageWrapper({ children }) {
     return (
         <div className="hold-transition login-page">
@@ -7,5 +9,9 @@ function LoginPageWrapper({ children }) {
         </div>
     )
 }
+
+LoginPageWrapper.propTypes = {
+    children: PropTypes.node.isRequired,
+};
 
 export default LoginPageWrapper
