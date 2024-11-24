@@ -18,15 +18,11 @@
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
-<<<<<<< HEAD
     "react-select": "^5.8.3",
     "react-sweetalert2": "^0.6.0",
     "sweetalert": "^2.1.2",
-    "sweetalert2": "^11.14.5",
-    "sweetalert2-react-content": "^5.0.7"
-=======
+    "sweetalert2-react-content": "^5.0.7",
     "sweetalert2": "^11.14.5"
->>>>>>> f512970d739be7d2f371b69a796d421ca66e4815
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
