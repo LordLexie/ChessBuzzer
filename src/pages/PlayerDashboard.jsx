@@ -68,6 +68,12 @@ function PlayerDashboard() {
   const [userChallenges, setChallenges] = useState([]);
   const [challengeTypes, setChallengeTypes] = useState([]);
   const [challengeModal, setChallengeModal] = useState(false);
+  const [gameSettleModal, setGameSettleModal] = useState(false);
+
+  const [claimPayload,setClaimPayload] = useState({
+    GameType:'',
+    ChallengeID:'',
+  })
 
   const [gameVariables, setGameVariables] = useState({
     challenge_type_code: '',
@@ -87,6 +93,11 @@ function PlayerDashboard() {
     setGameVariables({ ...gameVariables, [e.target.name]: e.target.value })
   }
 
+  const handleInput = (e) => {
+    e.persist();
+    setClaimPayload({ ...claimPayload, [e.target.name]: e.target.value })
+  }
+
   const setSearchUsername = (e) => {
     e.persist();
     setUsername(e.target.value)
@@ -101,6 +112,20 @@ function PlayerDashboard() {
 
   const openChallengeModal = () => {
     setChallengeModal(true)
+  }
+
+  const openGameSettleModal = (challengeId, gameType) => {
+    setGameSettleModal(true)
+    claimPayload.GameType = gameType
+    claimPayload.ChallengeID = challengeId
+  }
+
+  const closeGameSettleModal = () => {
+    setGameSettleModal(false)
+    setClaimPayload({
+      GameType:'',
+      ChallengeID:'',
+    })
   }
 
   const showAlert = (showIcon, showTitle) => {
@@ -390,9 +415,25 @@ function PlayerDashboard() {
 
   }
 
-  const displayChallenges = () => {
+  const claimGame = (e) => {
+    e.preventDefault()
+    
+    axios.post(`api/v1/game`, claimPayload).then(res => {
 
 
+      if (res.data.status === "Ok") {
+        //showAlert("success", "challenge updated")
+        fetchChallenges()
+        fetchWallets()
+      }
+      else if (res.data.status === 401) {
+        // swal('Warning', res.data.message, "warning")
+      }
+      else {
+
+      }
+
+    })
 
   }
 
@@ -501,6 +542,39 @@ function PlayerDashboard() {
         <Modal.Footer>
 
         </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={gameSettleModal}
+        onHide={closeGameSettleModal}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+
+        <Modal.Header closeButton>
+          <Modal.Title>Claim game</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <form onSubmit={claimGame}>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Game ID</label>
+                <input type="text" placeholder='from chess.com' className='form-control' id="GameID" name="GameID" onChange={handleInput} />
+              </div>
+            </div>
+
+           <div className='row m-1'>
+           <div className='col-md-12'>
+                <button type="submit" className='btn btn-success btn-sm'><span className='fa fa-trophy'></span> Claim game</button>
+              </div>
+           </div>
+
+          </form>
+        </Modal.Body>
+
       </Modal>
 
       <TopNav></TopNav>
@@ -631,7 +705,7 @@ function PlayerDashboard() {
                                         </>);
                                       }
                                     } else if (challenge.Status === 'active') {
-                                      return (<Dropdown.Item><i class="fa fa-trophy"></i> Claim</Dropdown.Item>)
+                                      return (<Dropdown.Item onClick={() => openGameSettleModal(challenge.ChallengeCode, challenge.GameType)}><i className="fa fa-trophy"></i> Claim</Dropdown.Item>)
                                     }
 
                                     // If status is not 'pending', return null (no item rendered)
