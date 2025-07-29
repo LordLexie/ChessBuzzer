@@ -66,13 +66,14 @@ function PlayerDashboard() {
   const [opponent, setOpponent] = useState({});
   const [userWallets, setWallets] = useState([]);
   const [userChallenges, setChallenges] = useState([]);
+  const [depositModal, setDepositModal] = useState(false);
   const [challengeTypes, setChallengeTypes] = useState([]);
   const [challengeModal, setChallengeModal] = useState(false);
   const [gameSettleModal, setGameSettleModal] = useState(false);
 
-  const [claimPayload,setClaimPayload] = useState({
-    GameType:'',
-    ChallengeID:'',
+  const [claimPayload, setClaimPayload] = useState({
+    GameType: '',
+    ChallengeID: '',
   })
 
   const [gameVariables, setGameVariables] = useState({
@@ -80,6 +81,21 @@ function PlayerDashboard() {
     currency: '',
     fees: 0,
   })
+
+  const [depositVariables,setDepositVariables] = useState({
+    phone:'',
+    amount:1
+  })
+
+  const handleDepositInput = (e) => {
+    e.persist();
+    setDepositVariables({ ...depositVariables, [e.target.name]: e.target.value })
+  }
+
+  const saveDeposit=(e)=>{
+    e.preventDefault();
+    console.log(depositVariables)
+  }
 
   const [inputErrors, setInputErrors] = useState({
     opponent: '',
@@ -123,9 +139,17 @@ function PlayerDashboard() {
   const closeGameSettleModal = () => {
     setGameSettleModal(false)
     setClaimPayload({
-      GameType:'',
-      ChallengeID:'',
+      GameType: '',
+      ChallengeID: '',
     })
+  }
+
+  const openDepositModal = () => {
+    setDepositModal(true)
+  }
+
+  const closeDepositModal = () => {
+    setDepositModal(false)
   }
 
   const showAlert = (showIcon, showTitle) => {
@@ -417,12 +441,12 @@ function PlayerDashboard() {
 
   const claimGame = (e) => {
     e.preventDefault()
-    
+
     axios.post(`api/v1/game`, claimPayload).then(res => {
 
 
       if (res.data.status === "Ok") {
-        //showAlert("success", "challenge updated")
+        showAlert("success", "claimed successfully")
         fetchChallenges()
         fetchWallets()
       }
@@ -566,11 +590,50 @@ function PlayerDashboard() {
               </div>
             </div>
 
-           <div className='row m-1'>
-           <div className='col-md-12'>
+            <div className='row m-1'>
+              <div className='col-md-12'>
                 <button type="submit" className='btn btn-success btn-sm'><span className='fa fa-trophy'></span> Claim game</button>
               </div>
-           </div>
+            </div>
+
+          </form>
+        </Modal.Body>
+
+      </Modal>
+
+      <Modal
+        show={depositModal}
+        onHide={closeDepositModal}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+
+        <Modal.Header closeButton>
+          <Modal.Title>KES DEPOSIT</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <form onSubmit={saveDeposit}>
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Phone number</label>
+                <input type="text" className='form-control' placeholder='254XXXXXXXXX' name='phone' id='phone' onChange={handleDepositInput} value={depositVariables.phone} />
+              </div>
+            </div>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Amount</label>
+                <input type="number" className='form-control' placeholder='AMOUNT' min='1'  name='amount' id='amount' onChange={handleDepositInput} value={depositVariables.amount} />
+              </div>
+            </div>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <button type="submit" className='btn btn-success btn-sm'> Deposit</button>
+              </div>
+            </div>
 
           </form>
         </Modal.Body>
@@ -626,7 +689,7 @@ function PlayerDashboard() {
                     <div className="row" style={{ paddingBottom: '5px' }}>
                       <div style={{ width: '50%' }}>
                         <span className="small-box-footer" style={{ padding: '5px' }}>
-                          <span className='btn btn-default btn-sm'>
+                          <span className='btn btn-default btn-sm' onClick={()=>openDepositModal()}>
                             Deposit <span className='fas fa-arrow-up'></span>
                           </span>
                         </span>

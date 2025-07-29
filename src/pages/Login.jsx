@@ -48,30 +48,34 @@ function Login() {
   const loginSubmit = (e) => {
     e.preventDefault();
 
-    const data = {
-      email: loginInput.email,
-      password: loginInput.password
+    try{
+
+      const data = {
+        email: loginInput.email,
+        password: loginInput.password
+      }
+
+      axios.post(`api/v1/auth/login`, data).then(res => {
+
+        if (res.data.status === "Ok") {
+          Cookies.set("Authorization",res.data.data)
+          const decoded_token = jwtDecode(res.data.data);
+  
+          localStorage.setItem('username', decoded_token.username)
+          localStorage.setItem('avatar', decoded_token.avatar)
+          navigate("/dashboard")
+        }
+        else if (res.data.status === 401) {
+          swal('Warning', res.data.message, "warning")
+        }else {
+          setLogin({ ...loginInput, error_list: res.data.validation_errors })
+        }
+  
+      });
+
+    }catch(error){
+        console.log(error.response.data)
     }
-
-    axios.post(`api/v1/auth/login`, data).then(res => {
-
-
-      if (res.data.status === "Ok") {
-        Cookies.set("Authorization",res.data.data)
-        const decoded_token = jwtDecode(res.data.data);
-
-        localStorage.setItem('username', decoded_token.username)
-        localStorage.setItem('avatar', decoded_token.avatar)
-        navigate("/dashboard")
-      }
-      else if (res.data.status === 401) {
-        swal('Warning', res.data.message, "warning")
-      }
-      else {
-        setLogin({ ...loginInput, error_list: res.data.validation_errors })
-      }
-
-    })
 
   }
 

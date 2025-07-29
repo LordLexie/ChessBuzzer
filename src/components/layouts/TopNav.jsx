@@ -1,4 +1,16 @@
+import { Link, useNavigate } from 'react-router-dom';
+
 function TopNav(){
+
+    const navigate = useNavigate();
+
+    const logout = (e) =>{
+        e.preventDefault();
+        localStorage.clear();
+        navigate("/");
+    }
+
+
     return(
 <nav className="main-header navbar navbar-expand navbar-white navbar-light">
 
@@ -12,7 +24,10 @@ function TopNav(){
     </ul>
 
     <ul className="navbar-nav ml-auto">
-    <li className="nav-item">
+
+    { /*
+
+        <li className="nav-item">
         <a className="nav-link" data-widget="navbar-search" href="#" role="button">
         <i className="fas fa-search"></i>
         </a>
@@ -31,9 +46,9 @@ function TopNav(){
             </div>
         </form>
         </div>
-    </li>
+        </li>
 
-    <li className="nav-item dropdown">
+        <li className="nav-item dropdown">
         <a className="nav-link" data-toggle="dropdown" href="#">
         <i className="far fa-comments"></i>
         <span className="badge badge-danger navbar-badge">3</span>
@@ -57,9 +72,9 @@ function TopNav(){
         <div className="dropdown-divider"></div>
         <a href="#" className="dropdown-item dropdown-footer">See All Messages</a>
         </div>
-    </li>
-    
-    <li className="nav-item dropdown">
+        </li>
+
+        <li className="nav-item dropdown">
         <a className="nav-link" data-toggle="dropdown" href="#">
         <i className="far fa-bell"></i>
         <span className="badge badge-warning navbar-badge">15</span>
@@ -74,17 +89,26 @@ function TopNav(){
         <div className="dropdown-divider"></div>
         <a href="#" className="dropdown-item dropdown-footer">See All Notifications</a>
         </div>
-    </li>
-    <li className="nav-item">
+        </li>
+
+        <li className="nav-item">
         <a className="nav-link" data-widget="fullscreen" href="#" role="button">
         <i className="fas fa-expand-arrows-alt"></i>
         </a>
-    </li>
-    <li className="nav-item">
+        </li>
+        <li className="nav-item">
         <a className="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
         <i className="fas fa-th-large"></i>
         </a>
+        </li>
+    */}
+
+    <li className="nav-item">
+        <a className="nav-link"  href="#" role="button" onClick={logout}>
+        <i className="fas fa-sign-out-alt"></i>
+        </a>
     </li>
+
     </ul>
 </nav>
     )
