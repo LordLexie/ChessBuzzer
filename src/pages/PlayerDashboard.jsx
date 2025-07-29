@@ -66,14 +66,36 @@ function PlayerDashboard() {
   const [opponent, setOpponent] = useState({});
   const [userWallets, setWallets] = useState([]);
   const [userChallenges, setChallenges] = useState([]);
+  const [depositModal, setDepositModal] = useState(false);
   const [challengeTypes, setChallengeTypes] = useState([]);
   const [challengeModal, setChallengeModal] = useState(false);
+  const [gameSettleModal, setGameSettleModal] = useState(false);
+
+  const [claimPayload, setClaimPayload] = useState({
+    GameType: '',
+    ChallengeID: '',
+  })
 
   const [gameVariables, setGameVariables] = useState({
     challenge_type_code: '',
     currency: '',
     fees: 0,
   })
+
+  const [depositVariables,setDepositVariables] = useState({
+    phone:'',
+    amount:1
+  })
+
+  const handleDepositInput = (e) => {
+    e.persist();
+    setDepositVariables({ ...depositVariables, [e.target.name]: e.target.value })
+  }
+
+  const saveDeposit=(e)=>{
+    e.preventDefault();
+    console.log(depositVariables)
+  }
 
   const [inputErrors, setInputErrors] = useState({
     opponent: '',
@@ -85,6 +107,11 @@ function PlayerDashboard() {
   const handleGameInput = (e) => {
     e.persist();
     setGameVariables({ ...gameVariables, [e.target.name]: e.target.value })
+  }
+
+  const handleInput = (e) => {
+    e.persist();
+    setClaimPayload({ ...claimPayload, [e.target.name]: e.target.value })
   }
 
   const setSearchUsername = (e) => {
@@ -101,6 +128,28 @@ function PlayerDashboard() {
 
   const openChallengeModal = () => {
     setChallengeModal(true)
+  }
+
+  const openGameSettleModal = (challengeId, gameType) => {
+    setGameSettleModal(true)
+    claimPayload.GameType = gameType
+    claimPayload.ChallengeID = challengeId
+  }
+
+  const closeGameSettleModal = () => {
+    setGameSettleModal(false)
+    setClaimPayload({
+      GameType: '',
+      ChallengeID: '',
+    })
+  }
+
+  const openDepositModal = () => {
+    setDepositModal(true)
+  }
+
+  const closeDepositModal = () => {
+    setDepositModal(false)
   }
 
   const showAlert = (showIcon, showTitle) => {
@@ -376,6 +425,8 @@ function PlayerDashboard() {
 
       if (res.data.status === "Ok") {
         showAlert("success", "challenge updated")
+        fetchChallenges()
+        fetchWallets()
       }
       else if (res.data.status === 401) {
         // swal('Warning', res.data.message, "warning")
@@ -388,9 +439,25 @@ function PlayerDashboard() {
 
   }
 
-  const displayChallenges = () => {
+  const claimGame = (e) => {
+    e.preventDefault()
 
-    
+    axios.post(`api/v1/game`, claimPayload).then(res => {
+
+
+      if (res.data.status === "Ok") {
+        showAlert("success", "claimed successfully")
+        fetchChallenges()
+        fetchWallets()
+      }
+      else if (res.data.status === 401) {
+        // swal('Warning', res.data.message, "warning")
+      }
+      else {
+
+      }
+
+    })
 
   }
 
@@ -501,6 +568,78 @@ function PlayerDashboard() {
         </Modal.Footer>
       </Modal>
 
+      <Modal
+        show={gameSettleModal}
+        onHide={closeGameSettleModal}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+
+        <Modal.Header closeButton>
+          <Modal.Title>Claim game</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <form onSubmit={claimGame}>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Game ID</label>
+                <input type="text" placeholder='from chess.com' className='form-control' id="GameID" name="GameID" onChange={handleInput} />
+              </div>
+            </div>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <button type="submit" className='btn btn-success btn-sm'><span className='fa fa-trophy'></span> Claim game</button>
+              </div>
+            </div>
+
+          </form>
+        </Modal.Body>
+
+      </Modal>
+
+      <Modal
+        show={depositModal}
+        onHide={closeDepositModal}
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+      >
+
+        <Modal.Header closeButton>
+          <Modal.Title>KES DEPOSIT</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <form onSubmit={saveDeposit}>
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Phone number</label>
+                <input type="text" className='form-control' placeholder='254XXXXXXXXX' name='phone' id='phone' onChange={handleDepositInput} value={depositVariables.phone} />
+              </div>
+            </div>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <label>Amount</label>
+                <input type="number" className='form-control' placeholder='AMOUNT' min='1'  name='amount' id='amount' onChange={handleDepositInput} value={depositVariables.amount} />
+              </div>
+            </div>
+
+            <div className='row m-1'>
+              <div className='col-md-12'>
+                <button type="submit" className='btn btn-success btn-sm'> Deposit</button>
+              </div>
+            </div>
+
+          </form>
+        </Modal.Body>
+
+      </Modal>
+
       <TopNav></TopNav>
       <Sidebar></Sidebar>
 
@@ -550,7 +689,7 @@ function PlayerDashboard() {
                     <div className="row" style={{ paddingBottom: '5px' }}>
                       <div style={{ width: '50%' }}>
                         <span className="small-box-footer" style={{ padding: '5px' }}>
-                          <span className='btn btn-default btn-sm'>
+                          <span className='btn btn-default btn-sm' onClick={()=>openDepositModal()}>
                             Deposit <span className='fas fa-arrow-up'></span>
                           </span>
                         </span>
@@ -597,53 +736,53 @@ function PlayerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                      {userChallenges.map((challenge, index) => (
-        <tr key={index}>
-          <td style={{ fontSize: '14px' }} >{index + 1}</td>
-          <td style={{ fontSize: '14px' }}>{FormatTime(challenge.CreatedAt)}</td>
-          <td style={{ fontSize: '14px' }} >{challenge.Description}</td>
-          <td style={{ fontSize: '14px' }}>{challenge.Currency} {challenge.EntryFee}</td>
-          <td style={{ fontSize: '14px' }}>
-            {challenge.Status === 'canceled' ? <><span className='fa fa-times-circle red' ></span> canceled</> : null}
-            {challenge.Status === 'pending' ? <><span className='fa fa-spinner'></span> pending</> : null}
-            {challenge.Status === 'complete' ? <><span className='fa fa-check-circle green'></span> complete</> : null}
-            {challenge.Status === 'active' ? <><span className='fa fa-circle-notch fa-spin green'></span> active</> : null}
-          </td>
+                        {userChallenges.map((challenge, index) => (
+                          <tr key={index}>
+                            <td style={{ fontSize: '14px' }} >{index + 1}</td>
+                            <td style={{ fontSize: '14px' }}>{FormatTime(challenge.CreatedAt)}</td>
+                            <td style={{ fontSize: '14px' }} >{challenge.Description}</td>
+                            <td style={{ fontSize: '14px' }}>{challenge.Currency} {challenge.EntryFee}</td>
+                            <td style={{ fontSize: '14px' }}>
+                              {challenge.Status === 'canceled' ? <><span className='fa fa-times-circle red' ></span> canceled</> : null}
+                              {challenge.Status === 'pending' ? <><span className='fa fa-spinner'></span> pending</> : null}
+                              {challenge.Status === 'complete' ? <><span className='fa fa-check-circle green'></span> complete</> : null}
+                              {challenge.Status === 'active' ? <><span className='fa fa-circle-notch fa-spin green'></span> active</> : null}
+                            </td>
 
-          <td style={{ fontSize: '14px' }}>
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="dropdown-basic" size="sm" >
-                {'action'}
-              </Dropdown.Toggle>
+                            <td style={{ fontSize: '14px' }}>
+                              <Dropdown>
+                                <Dropdown.Toggle variant="secondary" id="dropdown-basic" size="sm" >
+                                  {'action'}
+                                </Dropdown.Toggle>
 
-              <Dropdown.Menu>
-                {(() => {
+                                <Dropdown.Menu>
+                                  {(() => {
 
-                  if (challenge.Status === 'pending') {
-                    if (challenge.AcceptedChallenge == 1) {
-                      return <Dropdown.Item onClick={() => cancelGame(challenge.Challengeid)} > <span className='fa fa-times-circle'></span> Cancel</Dropdown.Item>;
-                    } else {
-                      return (<>
-                        <Dropdown.Item onClick={() => updateGame(challenge.ID, 1)}>Accept</Dropdown.Item>
-                        <Dropdown.Item onClick={() => updateGame(challenge.ID, 3)}>Reject</Dropdown.Item>
-                      </>);
-                    }
-                  } else if (challenge.Status === 'active') {
-                    return (<Dropdown.Item><i class="fa fa-trophy"></i> Claim</Dropdown.Item>)
-                  }
+                                    if (challenge.Status === 'pending') {
+                                      if (challenge.AcceptedChallenge == 1) {
+                                        return <Dropdown.Item onClick={() => cancelGame(challenge.Challengeid)} > <span className='fa fa-times-circle'></span> Cancel</Dropdown.Item>;
+                                      } else {
+                                        return (<>
+                                          <Dropdown.Item onClick={() => updateGame(challenge.ID, 1)}>Accept</Dropdown.Item>
+                                          <Dropdown.Item onClick={() => updateGame(challenge.ID, 3)}>Reject</Dropdown.Item>
+                                        </>);
+                                      }
+                                    } else if (challenge.Status === 'active') {
+                                      return (<Dropdown.Item onClick={() => openGameSettleModal(challenge.ChallengeCode, challenge.GameType)}><i className="fa fa-trophy"></i> Claim</Dropdown.Item>)
+                                    }
 
-                  // If status is not 'pending', return null (no item rendered)
-                  return null;
-                })()}
+                                    // If status is not 'pending', return null (no item rendered)
+                                    return null;
+                                  })()}
 
 
-              </Dropdown.Menu>
-            </Dropdown>
-          </td>
+                                </Dropdown.Menu>
+                              </Dropdown>
+                            </td>
 
-        </tr>
+                          </tr>
 
-      ))}
+                        ))}
                       </tbody>
                     </table>
                   </div>
