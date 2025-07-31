@@ -736,7 +736,7 @@ function PlayerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {userChallenges.map((challenge, index) => (
+                        {userChallenges?.map((challenge, index) => (
                           <tr key={index}>
                             <td style={{ fontSize: '14px' }} >{index + 1}</td>
                             <td style={{ fontSize: '14px' }}>{FormatTime(challenge.CreatedAt)}</td>
