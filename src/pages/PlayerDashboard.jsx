@@ -94,6 +94,25 @@ function PlayerDashboard() {
 
   const saveDeposit=(e)=>{
     e.preventDefault();
+
+    if(depositVariables.phone == '' || depositVariables.phone === null){
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Phone number is required!',
+      });
+      return;
+    }
+
+    if(depositVariables.phone.length < 9 || depositVariables.phone.length > 12){
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Phone number must be between 9 and 12 digits!',
+      });
+      return;
+    }
+
     console.log(depositVariables)
   }
 
@@ -261,10 +280,11 @@ function PlayerDashboard() {
           showAlert("success", "challenge created")
 
         }
-        else if (res.data.status === 401) {
+        else if (res.data.status === "Failed") {
+          showAlert("failed", res.data.data)
         }
         else {
-
+          showAlert("failed", "Failed, try again later")
         }
 
       })
@@ -618,7 +638,7 @@ function PlayerDashboard() {
             <div className='row m-1'>
               <div className='col-md-12'>
                 <label>Phone number</label>
-                <input type="text" className='form-control' placeholder='254XXXXXXXXX' name='phone' id='phone' onChange={handleDepositInput} value={depositVariables.phone} />
+                <input type="number" className='form-control' placeholder='254XXXXXXXXX' name='phone' id='phone' onChange={handleDepositInput} value={depositVariables.phone} />
               </div>
             </div>
 
