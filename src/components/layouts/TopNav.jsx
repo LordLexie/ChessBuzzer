@@ -1,17 +1,35 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import useAuth from '../../hooks/useAuth';
 
 function TopNav(){
 
     const navigate = useNavigate();
+    const { setAuth } = useAuth();
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    const [resendStatus, setResendStatus] = useState('');
+
+    const handleResend = async () => {
+        setResendStatus('sending');
+        try {
+            await axios.post('http://127.0.0.1:8888/api/v1/auth/resend-verification', { Email: userInfo.email });
+            setResendStatus('sent');
+        } catch {
+            setResendStatus('error');
+        }
+    };
 
     const logout = (e) =>{
         e.preventDefault();
-        localStorage.clear();
+        setAuth({});
+        localStorage.removeItem('userInfo');
         navigate("/");
     }
 
 
     return(
+<>
 <nav className="main-header navbar navbar-expand navbar-white navbar-light">
 
     <ul className="navbar-nav">
@@ -111,6 +129,28 @@ function TopNav(){
 
     </ul>
 </nav>
+{userInfo.status && userInfo.status !== 'active' && (
+    <div className="alert alert-warning mb-0 rounded-0 text-center py-2" style={{fontSize: '0.875rem'}}>
+        <i className="fas fa-exclamation-triangle mr-2"></i>
+        Your email is not verified. Please check your inbox and click the verification link.{' '}
+        {resendStatus === 'sent' ? (
+            <span className="font-weight-bold">Email resent!</span>
+        ) : (
+            <button
+                className="btn btn-link p-0 align-baseline"
+                style={{fontSize: 'inherit'}}
+                onClick={handleResend}
+                disabled={resendStatus === 'sending'}
+            >
+                {resendStatus === 'sending' ? 'Sending...' : 'Resend verification email'}
+            </button>
+        )}
+        {resendStatus === 'error' && (
+            <span className="text-danger ml-2">Failed to resend. Please try again.</span>
+        )}
+    </div>
+)}
+</>
     )
 }
 

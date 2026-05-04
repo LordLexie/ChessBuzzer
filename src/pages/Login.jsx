@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import swal from 'sweetalert2';
-// import useAuth from '../hooks/useAuth';
-import Cookies from 'js-cookie';
+import useAuth from '../hooks/useAuth';
 import { jwtDecode } from "jwt-decode";
 
 import axios from 'axios';
@@ -12,20 +10,19 @@ import LoginPageWrapper from "../components/layouts/LoginPageWrapper";
 function Login() {
 
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
   const [loginInput, setLogin] = useState({
     email: '',
     password: '',
-    error_list: [],
   });
 
-  
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleInput = (e) => {
     e.persist();
     setLogin({ ...loginInput, [e.target.name]: e.target.value })
   }
-
 
   const togglePassword = () => {
 
@@ -47,40 +44,38 @@ function Login() {
 
   const loginSubmit = (e) => {
     e.preventDefault();
+    setErrorMessage('');
 
-    try{
+    try {
 
       const data = {
         email: loginInput.email,
         password: loginInput.password
       }
 
-      axios.post(`api/v1/auth/login`, data).then(res => {
+      axios.post(`api/v1/auth/login`, data)
+        .then(res => {
+          if (res.data.status === "Ok") {
+            const decoded = jwtDecode(res.data.data);
+            const userInfo = { username: decoded.username, avatar: decoded.avatar, user_id: decoded.sub, status: decoded.status, email: decoded.email };
+            localStorage.setItem('userInfo', JSON.stringify(userInfo));
+            setAuth(userInfo);
+            navigate("/dashboard");
+          }
+        })
+        .catch(error => {
+          const message = error?.response?.data?.data || 'Login failed. Please try again.';
+          setErrorMessage(message);
+        });
 
-        if (res.data.status === "Ok") {
-          Cookies.set("Authorization",res.data.data)
-          const decoded_token = jwtDecode(res.data.data);
-  
-          localStorage.setItem('username', decoded_token.username)
-          localStorage.setItem('avatar', decoded_token.avatar)
-          navigate("/dashboard")
-        }
-        else if (res.data.status === 401) {
-          swal('Warning', res.data.message, "warning")
-        }else {
-          setLogin({ ...loginInput, error_list: res.data.validation_errors })
-        }
-  
-      });
-
-    }catch(error){
-        console.log(error.response.data)
+    } catch (error) {
+      setErrorMessage('Login failed. Please try again.');
     }
 
   }
 
   return (
-     <LoginPageWrapper>
+    <LoginPageWrapper>
       <div className="container d-flex align-items-center justify-content-center min-vh-100">
         <div className="card card-outline card-primary shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
           <div className="card-header text-center">
@@ -123,13 +118,18 @@ function Login() {
                   </div>
                 </div>
               </div>
+              {errorMessage && (
+                <div className="alert alert-danger py-2 mb-3" role="alert">
+                  {errorMessage}
+                </div>
+              )}
               <div className="d-grid gap-2">
                 <button type="submit" className="btn btn-primary btn-block">Sign In</button>
               </div>
             </form>
 
             <p className="mt-3 mb-1">
-              <a href="forgot-password.html">Forgot my password</a>
+              <Link to="/forgot-password">Forgot my password</Link>
             </p>
             <p className="mb-0">
               <Link to="/register" className="text-center">Register</Link>
