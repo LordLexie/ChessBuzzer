@@ -40,9 +40,17 @@ function RegistrationPage() {
             } else {
                 setError(res.data.message || 'Registration failed');
             }
-        } catch (error) {
-            console.error('Registration Error:', error);
-            setError('Registration Failed. Please try again.');
+        } catch (err) {
+            console.error('Registration Error:', err);
+            const remaining = err?.response?.headers?.['x-ratelimit-remaining'];
+            if (err?.response?.status === 429 || remaining === '0') {
+                setError('Too many attempts. Please try again after one hour.');
+            } else if (remaining !== undefined) {
+                const base = err?.response?.data?.Data || 'Registration failed. Please try again.';
+                setError(`${base} (${remaining} attempt${remaining === '1' ? '' : 's'} remaining this hour)`);
+            } else {
+                setError(err?.response?.data?.Data || 'Registration failed. Please try again.');
+            }
         }
     };
 
