@@ -37,6 +37,7 @@ function PlayerDashboard() {
   const [userChallenges, setChallenges] = useState([]);
   const [depositModal, setDepositModal] = useState(false);
   const [withdrawModal, setWithdrawModal] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
   const [challengeTypes, setChallengeTypes] = useState([]);
   const [challengeModal, setChallengeModal] = useState(false);
   const [gameSettleModal, setGameSettleModal] = useState(false);
@@ -151,6 +152,7 @@ function PlayerDashboard() {
       wallet_id: userWallets.length > 0 ? userWallets[0].id : 0,
     };
 
+    setWithdrawing(true);
     axios.post(`api/v1/player-wallet/withdraw`, payload)
       .then(res => {
         if (res.data.code == 200) {
@@ -164,7 +166,8 @@ function PlayerDashboard() {
       .catch(error => {
         const errorMessage = error.response?.data?.message || 'An unexpected error occurred.';
         Swal.fire({ icon: 'error', title: 'Error', text: errorMessage });
-      });
+      })
+      .finally(() => setWithdrawing(false));
   };
 
   const challengeSubmit = (e) => {
@@ -377,7 +380,11 @@ function PlayerDashboard() {
             </div>
             <div className='row m-1'>
               <div className='col-md-12'>
-                <button type="submit" className='btn btn-success btn-sm'>Withdraw</button>
+                <button type="submit" className='btn btn-success btn-sm' disabled={withdrawing}>
+                  {withdrawing
+                    ? <><span className='spinner-border spinner-border-sm me-1' role='status' aria-hidden='true'></span>Processing...</>
+                    : 'Withdraw'}
+                </button>
               </div>
             </div>
           </form>

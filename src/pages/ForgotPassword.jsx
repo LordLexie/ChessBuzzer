@@ -6,17 +6,27 @@ function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+        let rateLimited = false;
         try {
             await axios.post('/api/v1/auth/forgot-password', { Email: email });
-        } catch {
-            // intentionally silent — always show success to prevent enumeration
+        } catch (err) {
+            const remaining = err?.response?.headers?.['x-ratelimit-remaining'];
+            if (err?.response?.status === 429 || remaining === '0') {
+                rateLimited = true;
+                setError('Too many attempts. Please try again after one hour.');
+            }
+            // intentionally silent for all other errors — always show success to prevent enumeration
         } finally {
             setLoading(false);
-            setSubmitted(true);
+            if (!rateLimited) {
+                setSubmitted(true);
+            }
         }
     };
 
@@ -55,6 +65,7 @@ function ForgotPassword() {
                             required
                         />
                     </div>
+                    {error && <p className="text-danger">{error}</p>}
                     <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                         {loading ? 'Sending...' : 'Send Reset Link'}
                     </button>

@@ -64,8 +64,12 @@ function Login() {
           }
         })
         .catch(error => {
-          const message = error?.response?.data?.data || 'Login failed. Please try again.';
-          setErrorMessage(message);
+          const remaining = error?.response?.headers?.['x-ratelimit-remaining'];
+          if (error?.response?.status === 429 || remaining === '0') {
+            setErrorMessage('Too many attempts. Please try again after 15 minutes.');
+          } else {
+            setErrorMessage(error?.response?.data?.Data || 'Login failed. Please try again.');
+          }
         });
 
     } catch (error) {
