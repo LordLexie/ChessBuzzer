@@ -1,30 +1,30 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import DashboardWrapper from '../components/layouts/DashboardWrapper';
-import AdminTopNav from '../components/layouts/AdminTopNav';
-import AdminSidebar from '../components/layouts/AdminSidebar';
-import Aside from '../components/layouts/Aside';
-import Footer from '../components/layouts/Footer';
+import DashboardWrapper from '../../components/layouts/DashboardWrapper';
+import AdminTopNav from '../../components/layouts/AdminTopNav';
+import AdminSidebar from '../../components/layouts/AdminSidebar';
+import Aside from '../../components/layouts/Aside';
+import Footer from '../../components/layouts/Footer';
 
-function AdminTransactions() {
-    const [transactions, setTransactions] = useState([]);
+function AdminPlayers() {
+    const [players, setPlayers] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, totalRows: 0 });
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setLoading(true);
-        axios.get(`/api/v1/admin/transactions?page=${page}&page_size=10`)
+        axios.get(`/api/v1/admin/players?page=${page}&page_size=10`)
             .then(res => {
-                setTransactions(res.data.data ?? []);
+                setPlayers(res.data.data ?? []);
                 setPagination({
                     page: res.data.page,
                     totalPages: res.data.total_pages,
                     totalRows: res.data.total_rows,
                 });
             })
-            .catch(err => console.error('Error fetching transactions:', err))
+            .catch(err => console.error('Error fetching players:', err))
             .finally(() => setLoading(false));
     }, [page]);
 
@@ -38,7 +38,7 @@ function AdminTransactions() {
                     <div className="container-fluid">
                         <div className="row mb-2">
                             <div className="col-sm-6">
-                                <h1 className="m-0">Transactions</h1>
+                                <h1 className="m-0">Players</h1>
                             </div>
                         </div>
                     </div>
@@ -50,17 +50,17 @@ function AdminTransactions() {
                             <div className="col-md-12">
                                 <div className="card">
                                     <div className="card-body table-responsive p-0">
-                                        <table className="table table-hover text-nowrap">
+                                        <table className="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th style={{ fontSize: '14px' }}>#</th>
-                                                    <th style={{ fontSize: '14px' }}>Date</th>
-                                                    <th style={{ fontSize: '14px' }}>Player</th>
-                                                    <th style={{ fontSize: '14px' }}>Amount</th>
-                                                    <th style={{ fontSize: '14px' }}>Type</th>
-                                                    <th style={{ fontSize: '14px' }}>Channel</th>
-                                                    <th style={{ fontSize: '14px' }}>Reference</th>
-                                                    <th style={{ fontSize: '14px' }}>Description</th>
+                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>#</th>
+                                                    <th style={{ fontSize: '14px' }}>Avatar</th>
+                                                    <th style={{ fontSize: '14px' }}>Username</th>
+                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Name</th>
+                                                    <th className="d-none d-lg-table-cell" style={{ fontSize: '14px' }}>Email</th>
+                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Country</th>
+                                                    <th style={{ fontSize: '14px' }}>Status</th>
+                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Joined</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -70,33 +70,37 @@ function AdminTransactions() {
                                                             <span className="fa fa-spinner fa-spin" /> Loading...
                                                         </td>
                                                     </tr>
-                                                ) : transactions.length === 0 ? (
+                                                ) : players.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="8" className="text-center py-4">No transactions found.</td>
+                                                        <td colSpan="8" className="text-center py-4">No players found.</td>
                                                     </tr>
                                                 ) : (
-                                                    transactions.map((tx, index) => (
-                                                        <tr key={tx.ID}>
-                                                            <td style={{ fontSize: '13px' }}>{(pagination.page - 1) * 10 + index + 1}</td>
+                                                    players.map((player, index) => (
+                                                        <tr key={player.ID}>
+                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{(pagination.page - 1) * 10 + index + 1}</td>
+                                                            <td><img
+                                                                    src={player.avatar ?? './assets/dist/img/avatar.png'}
+                                                                    alt=""
+                                                                    className="img-circle img-size-32 mr-2"
+                                                                /></td>
                                                             <td style={{ fontSize: '13px' }}>
-                                                                {new Date(tx.CreatedAt).toLocaleString('en-KE', {
+                                                                {player.username}
+                                                            </td>
+                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{player.name}</td>
+                                                            <td className="d-none d-lg-table-cell" style={{ fontSize: '13px' }}>{player.email}</td>
+                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{player.country}</td>
+                                                            <td style={{ fontSize: '13px' }}>
+                                                                <span className={`badge badge-${player.status === 'active' ? 'success' : 'warning'}`}>
+                                                                    {player.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>
+                                                                {new Date(player.CreatedAt).toLocaleString('en-KE', {
                                                                     year: 'numeric',
                                                                     month: '2-digit',
                                                                     day: '2-digit',
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit',
                                                                 })}
                                                             </td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.User?.username ?? tx.UserID}</td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.Amount.toLocaleString()}</td>
-                                                            <td style={{ fontSize: '13px' }}>
-                                                                <span className={`badge badge-${tx.TransactionType === 'credit' ? 'success' : 'danger'}`}>
-                                                                    {tx.TransactionType}
-                                                                </span>
-                                                            </td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.Channel ?? '—'}</td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.Reference ?? '—'}</td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.Description ?? '—'}</td>
                                                         </tr>
                                                     ))
                                                 )}
@@ -135,4 +139,4 @@ function AdminTransactions() {
     );
 }
 
-export default AdminTransactions;
+export default AdminPlayers;

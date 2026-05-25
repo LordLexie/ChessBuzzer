@@ -37,6 +37,7 @@ function PlayerDashboard() {
   const [userChallenges, setChallenges] = useState([]);
   const [depositModal, setDepositModal] = useState(false);
   const [withdrawModal, setWithdrawModal] = useState(false);
+  const [depositing, setDepositing] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [challengeTypes, setChallengeTypes] = useState([]);
   const [challengeModal, setChallengeModal] = useState(false);
@@ -123,15 +124,18 @@ function PlayerDashboard() {
       return;
     }
 
-    axios.post(`api/v1/stk-push/smplypay`, { ...depositVariables, amount: parseInt(depositVariables.amount) }).then(res => {
-      if (res.data.code == 200) {
-        Swal.fire({ icon: 'success', title: 'Success', text: 'STK push initiated successfully!' });
-        closeDepositModal();
-        fetchWallets();
-      } else {
-        Swal.fire({ icon: 'error', title: 'Oops...', text: 'Failed to initiate deposit. Please try again.' });
-      }
-    });
+    setDepositing(true);
+    axios.post(`api/v1/stk-push/smplypay`, { ...depositVariables, amount: parseInt(depositVariables.amount) })
+      .then(res => {
+        if (res.data.code == 200) {
+          Swal.fire({ icon: 'success', title: 'Success', text: 'STK push initiated successfully!' });
+          closeDepositModal();
+          fetchWallets();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Oops...', text: 'Failed to initiate deposit. Please try again.' });
+        }
+      })
+      .finally(() => setDepositing(false));
   };
 
   const withdrawDeposit = (e) => {
@@ -226,6 +230,16 @@ function PlayerDashboard() {
     });
   };
 
+  const fetchProfile = () => {
+    axios.get(`api/v1/user/${userId}`).then(res => {
+      if (res.data.status === 'Ok') {
+        const phone = res.data.data.phone ?? '254719671440';
+        setDepositVariables(prev => ({ ...prev, phoneNumber: phone }));
+        setWithdrawVariables(prev => ({ ...prev, phone }));
+      }
+    });
+  };
+
   const searchUsers = (event) => {
     if (event.length > 0) {
       axios.post(`api/v1/user/search`, { username: event }).then(res => {
@@ -271,6 +285,7 @@ function PlayerDashboard() {
     fetchChallenges();
     fetchWallets();
     fetchGameTypes();
+    fetchProfile();
   }, []);
 
   return (
@@ -411,7 +426,11 @@ function PlayerDashboard() {
             </div>
             <div className='row m-1'>
               <div className='col-md-12'>
-                <button type="submit" className='btn btn-success btn-sm'>Deposit</button>
+                <button type="submit" className='btn btn-success btn-sm' disabled={depositing}>
+                  {depositing
+                    ? <><span className='spinner-border spinner-border-sm me-1' role='status' aria-hidden='true'></span>Processing...</>
+                    : 'Deposit'}
+                </button>
               </div>
             </div>
           </form>
@@ -541,6 +560,7 @@ function PlayerDashboard() {
               </div>
 
             </div>
+
           </div>
         </div>
       </div>

@@ -121,10 +121,25 @@ function TopNav(){
         </li>
     */}
 
-    <li className="nav-item">
-        <a className="nav-link"  href="#" role="button" onClick={logout}>
-        <i className="fas fa-sign-out-alt"></i>
+    <li className="nav-item dropdown">
+        <a className="nav-link dropdown-toggle d-flex align-items-center" data-toggle="dropdown" href="#" role="button">
+            <img
+                src={userInfo.avatar || './assets/dist/img/avatar.png'}
+                alt="avatar"
+                className="img-circle"
+                style={{ width: 28, height: 28, objectFit: 'cover', marginRight: 6 }}
+            />
+            <span className="d-none d-sm-inline">{userInfo.username}</span>
         </a>
+        <div className="dropdown-menu dropdown-menu-right">
+            <Link to="/profile" className="dropdown-item">
+                <i className="fas fa-user-circle mr-2"></i> Profile
+            </Link>
+            <div className="dropdown-divider"></div>
+            <a href="#" className="dropdown-item" onClick={logout}>
+                <i className="fas fa-sign-out-alt mr-2"></i> Sign out
+            </a>
+        </div>
     </li>
 
     </ul>

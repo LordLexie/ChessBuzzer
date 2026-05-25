@@ -25,9 +25,51 @@ function AdminSidebar() {
                             </Link>
                         </li>
                         <li className="nav-item">
+                            <Link to="/admin/leaderboard" className="nav-link">
+                                <i className="nav-icon fas fa-trophy"></i>
+                                <p>Leaderboard</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/player-archives" className="nav-link">
+                                <i className="nav-icon fas fa-archive"></i>
+                                <p>Player Archives</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/marketing" className="nav-link">
+                                <i className="nav-icon fas fa-bullhorn"></i>
+                                <p>Marketing</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/time-analytics" className="nav-link">
+                                <i className="nav-icon fas fa-clock"></i>
+                                <p>Time Analytics</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
                             <Link to="/admin/transactions" className="nav-link">
                                 <i className="nav-icon fas fa-exchange-alt"></i>
                                 <p>Transactions</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/challenges" className="nav-link">
+                                <i className="nav-icon fas fa-chess"></i>
+                                <p>Challenges</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/wallets" className="nav-link">
+                                <i className="nav-icon fas fa-wallet"></i>
+                                <p>Player Wallets</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/admin/central-wallets" className="nav-link">
+                                <i className="nav-icon fas fa-university"></i>
+                                <p>Central Wallets</p>
                             </Link>
                         </li>
                     </ul>

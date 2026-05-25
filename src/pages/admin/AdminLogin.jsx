@@ -3,8 +3,8 @@ import Swal from 'sweetalert2';
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
-import LoginPageWrapper from "../components/layouts/LoginPageWrapper";
+import useAuth from '../../hooks/useAuth';
+import LoginPageWrapper from "../../components/layouts/LoginPageWrapper";
 
 function AdminLogin() {
 

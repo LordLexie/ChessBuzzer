@@ -14,17 +14,35 @@ function Sidebar() {
                     <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li className="nav-item">
                             <Link to="/dashboard" className="nav-link">
-                                <i className="nav-icon far fa-circle text-danger"></i>
-                                <p className="text">Home</p>
+                                <i className="nav-icon fas fa-home"></i>
+                                <p>Home</p>
                             </Link>
                         </li>
                         <li className="nav-item">
                             <Link to="/transactions" className="nav-link">
-                                <i className="nav-icon far fa-circle text-success"></i>
-                                <p className="text">Transactions</p>
+                                <i className="nav-icon fas fa-exchange-alt"></i>
+                                <p>Transactions</p>
                             </Link>
                         </li>
-                       
+                        <li className="nav-item">
+                            <Link to="/analytics" className="nav-link">
+                                <i className="nav-icon fas fa-chart-line"></i>
+                                <p>Analytics</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/archives" className="nav-link">
+                                <i className="nav-icon fas fa-archive"></i>
+                                <p>Archives</p>
+                            </Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link to="/leaderboard" className="nav-link">
+                                <i className="nav-icon fas fa-trophy"></i>
+                                <p>Leaderboard</p>
+                            </Link>
+                        </li>
+
                     </ul>
                 </nav>
             </div>

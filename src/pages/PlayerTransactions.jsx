@@ -80,7 +80,11 @@ function PlayerTransactions() {
                                                             })}
                                                         </td>
                                                         <td style={{ fontSize: '13px' }}>{transaction.Amount}</td>
-                                                        <td style={{ fontSize: '13px' }}>{transaction.TransactionType}</td>
+                                                        <td style={{ fontSize: '13px' }}>
+                                                            <span className={`badge badge-${transaction.TransactionType?.toLowerCase() === 'credit' ? 'success' : 'danger'}`}>
+                                                                {transaction.TransactionType?.toLowerCase()}
+                                                            </span>
+                                                        </td>
                                                         <td style={{ fontSize: '13px' }}>{transaction.Reference}</td>
                                                         <td style={{ fontSize: '13px' }}>{transaction.Description}</td>
                                                     </tr>
