@@ -1,52 +1,64 @@
-import { Link } from 'react-router-dom';
-import logo from '../../assets/logo.png';
+import { Link, useLocation } from 'react-router-dom';
+import { Icons, CHESS } from '../ui/Icons';
+import { useSidebar } from '../../context/SidebarContext';
+
+const NAV = [
+    { id: 'home',         label: 'Home',          icon: 'home',    to: '/dashboard' },
+    { id: 'find',         label: 'Find a Game',   icon: 'globe',   to: '/open-challenges' },
+    { id: 'tournaments',  label: 'Tournaments',   icon: 'grid',    to: '/tournaments' },
+    { id: 'transactions', label: 'Transactions',  icon: 'swap',    to: '/transactions' },
+    { id: 'analytics',    label: 'Analytics',     icon: 'chart',   to: '/analytics' },
+    { id: 'archives',     label: 'Archives',      icon: 'archive', to: '/archives' },
+    { id: 'leaders',      label: 'Leaders board', icon: 'trophy',  to: '/leaderboard' },
+];
 
 function Sidebar() {
+    const location = useLocation();
+    const { isOpen, close } = useSidebar();
+
+    let info = {};
+    try { info = JSON.parse(localStorage.getItem('userInfo') || '{}'); } catch {}
+    const initial = (info.username || 'U')[0].toUpperCase();
+
     return (
-        <aside className="main-sidebar sidebar-dark-primary elevation-4">
-            <span href="index3.html" className="brand-link">
-                <img src={logo} alt="ChessBuzzer Logo" className="brand-image elevation-3" style={{borderRadius: '4px'}} />
-                <span className="brand-text font-weight-light">Chess Buzzer</span>
-            </span>
+        <>
+            <div className={'cb-overlay' + (isOpen ? ' show' : '')} onClick={close} />
 
-            <div className="sidebar">
-                <nav className="mt-2">
-                    <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li className="nav-item">
-                            <Link to="/dashboard" className="nav-link">
-                                <i className="nav-icon fas fa-home"></i>
-                                <p>Home</p>
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link to="/transactions" className="nav-link">
-                                <i className="nav-icon fas fa-exchange-alt"></i>
-                                <p>Transactions</p>
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link to="/analytics" className="nav-link">
-                                <i className="nav-icon fas fa-chart-line"></i>
-                                <p>Analytics</p>
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link to="/archives" className="nav-link">
-                                <i className="nav-icon fas fa-archive"></i>
-                                <p>Archives</p>
-                            </Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link to="/leaderboard" className="nav-link">
-                                <i className="nav-icon fas fa-trophy"></i>
-                                <p>Leaderboard</p>
-                            </Link>
-                        </li>
+            <aside className={'cb-sidebar' + (isOpen ? ' open' : '')}>
+                <Link to="/dashboard" className="cb-brand" onClick={close}>
+                    <div className="cb-brand-tile">{CHESS.knight}</div>
+                    <div className="cb-brand-text">
+                        <span className="cb-brand-name">Chess Buzzer</span>
+                        <span className="cb-brand-role">Player</span>
+                    </div>
+                </Link>
 
-                    </ul>
-                </nav>
-            </div>
-        </aside>
+                {NAV.map(n => {
+                    const Icon = Icons[n.icon];
+                    const active = location.pathname === n.to ||
+                        (n.to !== '/dashboard' && location.pathname.startsWith(n.to));
+                    return (
+                        <Link
+                            key={n.id}
+                            to={n.to}
+                            className={'cb-nav-item' + (active ? ' active' : '')}
+                            onClick={close}
+                        >
+                            <Icon size={20} />
+                            <span className="cb-nav-label">{n.label}</span>
+                        </Link>
+                    );
+                })}
+
+                <div className="cb-sidebar-foot">
+                    <div className="cb-avatar">{initial}</div>
+                    <div className="cb-sidebar-foot-text">
+                        <b>{info.username || 'Player'}</b>
+                        <small>Verified player</small>
+                    </div>
+                </div>
+            </aside>
+        </>
     );
 }
 

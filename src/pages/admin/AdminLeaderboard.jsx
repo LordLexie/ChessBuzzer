@@ -4,8 +4,7 @@ import axios from 'axios';
 import DashboardWrapper from '../../components/layouts/DashboardWrapper';
 import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
-import Aside from '../../components/layouts/Aside';
-import Footer from '../../components/layouts/Footer';
+import { Icons } from '../../components/ui/Icons';
 
 function AdminLeaderboard() {
     const [entries, setEntries] = useState([]);
@@ -19,7 +18,7 @@ function AdminLeaderboard() {
         setLoading(true);
         const params = new URLSearchParams({ page, page_size: 10 });
         if (appliedFilters.dateFrom) params.append('date_from', appliedFilters.dateFrom);
-        if (appliedFilters.dateTo) params.append('date_to', appliedFilters.dateTo);
+        if (appliedFilters.dateTo)   params.append('date_to', appliedFilters.dateTo);
         axios.get(`/api/v1/admin/leaderboard?${params}`)
             .then(res => {
                 setEntries(res.data.data ?? []);
@@ -33,159 +32,113 @@ function AdminLeaderboard() {
             .finally(() => setLoading(false));
     }, [page, appliedFilters]);
 
-    const applyFilters = () => {
-        setPage(1);
-        setAppliedFilters({ ...filters });
-    };
-
+    const applyFilters = () => { setPage(1); setAppliedFilters({ ...filters }); };
     const resetFilters = () => {
         setFilters({ dateFrom: '', dateTo: '' });
         setAppliedFilters({ dateFrom: '', dateTo: '' });
         setPage(1);
     };
 
+    const medal = rank => rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
+
     return (
         <DashboardWrapper>
-            <AdminTopNav />
             <AdminSidebar />
-
-            <div className="content-wrapper">
-                <div className="content-header">
-                    <div className="container-fluid">
-                        <div className="row mb-2">
-                            <div className="col-sm-6">
-                                <h1 className="m-0">
-                                    <i className="fas fa-trophy mr-2 text-warning" />
-                                    Leaderboard
-                                </h1>
-                            </div>
+            <div className="cb-main">
+                <AdminTopNav />
+                <div className="cb-body">
+                    {/* Filters */}
+                    <div className="cb-card">
+                        <div className="cb-card-head">
+                            <Icons.trophy size={18} />
+                            <h2>Leaderboard</h2>
                         </div>
-                    </div>
-                </div>
-
-                <div className="content">
-                    <div className="container-fluid">
-
-                        <div className="card mb-3">
-                            <div className="card-body py-2">
-                                <div className="form-row align-items-end">
-                                    <div className="form-group col-md-4 mb-0">
-                                        <label style={{ fontSize: '13px' }}>From</label>
-                                        <input
-                                            type="date"
-                                            className="form-control form-control-sm"
-                                            value={filters.dateFrom}
-                                            onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className="form-group col-md-4 mb-0">
-                                        <label style={{ fontSize: '13px' }}>To</label>
-                                        <input
-                                            type="date"
-                                            className="form-control form-control-sm"
-                                            value={filters.dateTo}
-                                            onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className="form-group col-md-4 mb-0 d-flex" style={{ gap: '8px' }}>
-                                        <button className="btn btn-sm btn-primary" onClick={applyFilters}>Apply</button>
-                                        <button className="btn btn-sm btn-secondary" onClick={resetFilters}>Reset</button>
-                                    </div>
+                        <div className="cb-card-body">
+                            <div className="cb-filters">
+                                <div className="cb-form-group" style={{ minWidth: 140 }}>
+                                    <label className="cb-label">From</label>
+                                    <input className="cb-input" type="date" value={filters.dateFrom}
+                                        onChange={e => setFilters(f => ({ ...f, dateFrom: e.target.value }))} />
+                                </div>
+                                <div className="cb-form-group" style={{ minWidth: 140 }}>
+                                    <label className="cb-label">To</label>
+                                    <input className="cb-input" type="date" value={filters.dateTo}
+                                        onChange={e => setFilters(f => ({ ...f, dateTo: e.target.value }))} />
+                                </div>
+                                <div style={{ alignSelf: 'flex-end', display: 'flex', gap: 8 }}>
+                                    <button className="cb-btn cb-btn-primary" onClick={applyFilters}>Apply</button>
+                                    <button className="cb-btn cb-btn-ghost" onClick={resetFilters}>Reset</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="card">
-                                    <div className="card-body table-responsive p-0">
-                                        <table className="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ fontSize: '14px' }}>Rank</th>
-                                                    <th style={{ fontSize: '14px' }}>Avatar</th>
-                                                    <th style={{ fontSize: '14px' }}>Username</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Name</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Country</th>
-                                                    <th style={{ fontSize: '14px' }}>Challenges</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Joined</th>
+                        <div className="cb-table-wrap">
+                            {loading ? (
+                                <div className="cb-center"><div className="cb-spinner" /></div>
+                            ) : (
+                                <table className="cb-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Username</th>
+                                            <th>Name</th>
+                                            <th>Country</th>
+                                            <th>Challenges</th>
+                                            <th>Joined</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {entries.length === 0 ? (
+                                            <tr><td colSpan={6} className="cb-empty">No data found.</td></tr>
+                                        ) : entries.map((entry, index) => {
+                                            const rank = (pagination.page - 1) * 10 + index + 1;
+                                            const m = medal(rank);
+                                            return (
+                                                <tr key={entry.ID}>
+                                                    <td>
+                                                        {m ? (
+                                                            <span style={{ fontSize: 20 }}>{m}</span>
+                                                        ) : (
+                                                            <div className="cb-seat">{rank}</div>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div className="cb-user">
+                                                            <div className="cb-user-av" style={{ background: 'linear-gradient(150deg,#3BE089,#1E8A52)' }}>
+                                                                {entry.username?.[0]?.toUpperCase() ?? '?'}
+                                                            </div>
+                                                            <span style={{ fontWeight: 700, color: rank <= 3 ? '#F2C14E' : '#E8F1EB' }}>{entry.username}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="cb-muted">{entry.name || '—'}</td>
+                                                    <td className="cb-muted">{entry.country || '—'}</td>
+                                                    <td>
+                                                        <span className="cb-mono green" style={{ fontSize: 14 }}>{entry.challenge_count}</span>
+                                                    </td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                        {new Date(entry.CreatedAt).toLocaleDateString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {loading ? (
-                                                    <tr>
-                                                        <td colSpan="7" className="text-center py-4">
-                                                            <span className="fa fa-spinner fa-spin" /> Loading...
-                                                        </td>
-                                                    </tr>
-                                                ) : entries.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan="7" className="text-center py-4">No data found.</td>
-                                                    </tr>
-                                                ) : (
-                                                    entries.map((entry, index) => {
-                                                        const rank = (pagination.page - 1) * 10 + index + 1;
-                                                        return (
-                                                            <tr key={entry.ID}>
-                                                                <td style={{ fontSize: '13px', fontWeight: rank <= 3 ? 'bold' : 'normal' }}>
-                                                                    {rank === 1 && <i className="fas fa-trophy text-warning mr-1" />}
-                                                                    {rank === 2 && <i className="fas fa-medal text-secondary mr-1" />}
-                                                                    {rank === 3 && <i className="fas fa-medal text-danger mr-1" style={{ opacity: 0.7 }} />}
-                                                                    {rank}
-                                                                </td>
-                                                                <td>
-                                                                    <img
-                                                                        src={entry.avatar ?? './assets/dist/img/avatar.png'}
-                                                                        alt=""
-                                                                        className="img-circle img-size-32 mr-2"
-                                                                    />
-                                                                </td>
-                                                                <td style={{ fontSize: '13px' }}>{entry.username}</td>
-                                                                <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{entry.name}</td>
-                                                                <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{entry.country}</td>
-                                                                <td style={{ fontSize: '13px', fontWeight: 'bold' }}>{entry.challenge_count}</td>
-                                                                <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>
-                                                                    {new Date(entry.CreatedAt).toLocaleString('en-KE', {
-                                                                        year: 'numeric',
-                                                                        month: '2-digit',
-                                                                        day: '2-digit',
-                                                                    })}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="card-footer d-flex justify-content-between align-items-center">
-                                        <span style={{ fontSize: '13px' }}>
-                                            Page {pagination.page} of {pagination.totalPages} &nbsp;({pagination.totalRows} total)
-                                        </span>
-                                        <ul className="pagination pagination-sm mb-0">
-                                            <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p - 1)}>Previous</button>
-                                            </li>
-                                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-                                                <li key={p} className={`page-item ${pagination.page === p ? 'active' : ''}`}>
-                                                    <button className="page-link" onClick={() => setPage(p)}>{p}</button>
-                                                </li>
-                                            ))}
-                                            <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p + 1)}>Next</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="cb-card-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="cb-muted" style={{ fontSize: 13 }}>
+                                Page {pagination.page} of {pagination.totalPages} ({pagination.totalRows} total)
+                            </span>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p - 1)} disabled={page === 1}>Previous</button>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p + 1)} disabled={page === pagination.totalPages}>Next</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <Aside />
-            <Footer />
         </DashboardWrapper>
     );
 }

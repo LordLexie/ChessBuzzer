@@ -56,34 +56,37 @@ function RegistrationPage() {
 
     if (submitted) {
         return (
-            <div className="container d-flex align-items-center justify-content-center min-vh-100">
-                <div className="card p-4 shadow-sm w-100 text-center" style={{ maxWidth: '400px' }}>
-                    <div className="mb-3" style={{ fontSize: '3rem' }}>📧</div>
-                    <h4 className="mb-3">Check your email</h4>
-                    <p className="text-muted">
-                        We sent a verification link to <strong>{email}</strong>.
+            <div className="cb-auth-page">
+                <div className="cb-auth-card" style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: 16 }}>📧</div>
+                    <h1 style={{ fontSize: 22, marginBottom: 12 }}>Check your email</h1>
+                    <p style={{ color: '#8A9D92', fontSize: 14, marginBottom: 10 }}>
+                        We sent a verification link to <strong style={{ color: '#E8F1EB' }}>{email}</strong>.
                         Please click it to activate your account.
                     </p>
-                    <p className="text-muted small">The link expires in 24 hours.</p>
-                    <p className="text-muted small">
-                        Can't find it? Check your <strong>spam or junk folder</strong> or{' '}
+                    <p style={{ color: '#8A9D92', fontSize: 13, marginBottom: 10 }}>The link expires in 24 hours.</p>
+                    <p style={{ color: '#8A9D92', fontSize: 13 }}>
+                        Can't find it? Check your spam folder or{' '}
                         {resendStatus === 'sent' ? (
-                            <span className="text-success">Email resent!</span>
+                            <span style={{ color: '#3BE089' }}>Email resent!</span>
                         ) : (
                             <button
-                                className="btn btn-link p-0 align-baseline"
-                                style={{ fontSize: 'inherit' }}
+                                style={{ background: 'none', border: 'none', color: '#3BE089', cursor: 'pointer', fontSize: 'inherit', textDecoration: 'underline', padding: 0 }}
                                 onClick={handleResend}
                                 disabled={resendStatus === 'sending'}
                             >
-                                {resendStatus === 'sending' ? 'Sending...' : 'resend the email'}
+                                {resendStatus === 'sending' ? 'Sending…' : 'resend the email'}
                             </button>
                         )}
                         {resendStatus === 'error' && (
-                            <span className="text-danger d-block mt-1">Failed to resend. Please try again.</span>
+                            <span style={{ color: '#FF6A3D', display: 'block', marginTop: 4 }}>Failed to resend. Please try again.</span>
                         )}
                     </p>
-                    <button className="btn btn-link mt-2" onClick={() => navigate('/')}>
+                    <button
+                        className="cb-btn cb-btn-ghost cb-btn-full"
+                        style={{ marginTop: 20 }}
+                        onClick={() => navigate('/')}
+                    >
                         Back to Login
                     </button>
                 </div>
@@ -92,53 +95,41 @@ function RegistrationPage() {
     }
 
     return (
-        <div className="container d-flex align-items-center justify-content-center min-vh-100">
-            <div className="card p-4 shadow-sm w-100" style={{ maxWidth: '400px' }}>
-                <h2 className="text-center mb-4">Sign Up</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Username:</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
+        <div className="cb-auth-page">
+            <div className="cb-auth-card">
+                <div className="cb-auth-brand">
+                    <div className="cb-brand-tile" style={{ width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(150deg,#3BE089,#1E8A52)', display: 'grid', placeItems: 'center', fontSize: 22, color: '#06140C', boxShadow: '0 0 22px #3be08955' }}>♞</div>
+                    <div>
+                        <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 800, fontSize: 18, color: '#E8F1EB' }}>Chess Buzzer</div>
+                        <div style={{ fontSize: 11, color: '#1E8A52', letterSpacing: '.14em', textTransform: 'uppercase' }}>Create account</div>
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">Email:</label>
-                        <input
-                            type="email"
-                            className="form-control"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
+                </div>
+                <h1>Sign Up</h1>
+                <p>Join Chess Buzzer and start competing.</p>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div className="cb-form-group">
+                        <label className="cb-label">Username</label>
+                        <input type="text" className="cb-input" value={username} onChange={(e) => setUsername(e.target.value)} required placeholder="your_username" />
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">Password:</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
+                    <div className="cb-form-group">
+                        <label className="cb-label">Email</label>
+                        <input type="email" className="cb-input" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@email.com" />
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">Confirm Password:</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                        />
+                    <div className="cb-form-group">
+                        <label className="cb-label">Password</label>
+                        <input type="password" className="cb-input" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" />
                     </div>
-                    {error && <p className="text-danger">{error}</p>}
-                    <button type="submit" className="btn btn-primary w-100">Register</button>
+                    <div className="cb-form-group">
+                        <label className="cb-label">Confirm Password</label>
+                        <input type="password" className="cb-input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required placeholder="••••••••" />
+                    </div>
+                    {error && <p style={{ color: '#FF6A3D', fontSize: 13 }}>{error}</p>}
+                    <button type="submit" className="cb-btn cb-btn-primary cb-btn-full" style={{ marginTop: 4 }}>Create Account</button>
                 </form>
+                <div className="cb-auth-foot">
+                    Already have an account?{' '}
+                    <a href="/" className="cb-auth-link">Sign in</a>
+                </div>
             </div>
         </div>
     );

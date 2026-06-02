@@ -4,8 +4,7 @@ import axios from 'axios';
 import DashboardWrapper from '../../components/layouts/DashboardWrapper';
 import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
-import Aside from '../../components/layouts/Aside';
-import Footer from '../../components/layouts/Footer';
+import { Icons } from '../../components/ui/Icons';
 
 function AdminPlayers() {
     const [players, setPlayers] = useState([]);
@@ -30,111 +29,81 @@ function AdminPlayers() {
 
     return (
         <DashboardWrapper>
-            <AdminTopNav />
             <AdminSidebar />
-
-            <div className="content-wrapper">
-                <div className="content-header">
-                    <div className="container-fluid">
-                        <div className="row mb-2">
-                            <div className="col-sm-6">
-                                <h1 className="m-0">Players</h1>
-                            </div>
+            <div className="cb-main">
+                <AdminTopNav />
+                <div className="cb-body">
+                    <div className="cb-card">
+                        <div className="cb-card-head">
+                            <Icons.users size={20} />
+                            <h2>Players</h2>
+                            <span className="cb-count">{pagination.totalRows}</span>
                         </div>
-                    </div>
-                </div>
-
-                <div className="content">
-                    <div className="container-fluid">
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="card">
-                                    <div className="card-body table-responsive p-0">
-                                        <table className="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>#</th>
-                                                    <th style={{ fontSize: '14px' }}>Avatar</th>
-                                                    <th style={{ fontSize: '14px' }}>Username</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Name</th>
-                                                    <th className="d-none d-lg-table-cell" style={{ fontSize: '14px' }}>Email</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Country</th>
-                                                    <th style={{ fontSize: '14px' }}>Status</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Joined</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {loading ? (
-                                                    <tr>
-                                                        <td colSpan="8" className="text-center py-4">
-                                                            <span className="fa fa-spinner fa-spin" /> Loading...
-                                                        </td>
-                                                    </tr>
-                                                ) : players.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan="8" className="text-center py-4">No players found.</td>
-                                                    </tr>
-                                                ) : (
-                                                    players.map((player, index) => (
-                                                        <tr key={player.ID}>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{(pagination.page - 1) * 10 + index + 1}</td>
-                                                            <td><img
-                                                                    src={player.avatar ?? './assets/dist/img/avatar.png'}
-                                                                    alt=""
-                                                                    className="img-circle img-size-32 mr-2"
-                                                                /></td>
-                                                            <td style={{ fontSize: '13px' }}>
-                                                                {player.username}
-                                                            </td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{player.name}</td>
-                                                            <td className="d-none d-lg-table-cell" style={{ fontSize: '13px' }}>{player.email}</td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{player.country}</td>
-                                                            <td style={{ fontSize: '13px' }}>
-                                                                <span className={`badge badge-${player.status === 'active' ? 'success' : 'warning'}`}>
-                                                                    {player.status}
-                                                                </span>
-                                                            </td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>
-                                                                {new Date(player.CreatedAt).toLocaleString('en-KE', {
-                                                                    year: 'numeric',
-                                                                    month: '2-digit',
-                                                                    day: '2-digit',
-                                                                })}
-                                                            </td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="card-footer d-flex justify-content-between align-items-center">
-                                        <span style={{ fontSize: '13px' }}>
-                                            Page {pagination.page} of {pagination.totalPages} &nbsp;({pagination.totalRows} total)
-                                        </span>
-                                        <ul className="pagination pagination-sm mb-0">
-                                            <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p - 1)}>Previous</button>
-                                            </li>
-                                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-                                                <li key={p} className={`page-item ${pagination.page === p ? 'active' : ''}`}>
-                                                    <button className="page-link" onClick={() => setPage(p)}>{p}</button>
-                                                </li>
-                                            ))}
-                                            <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p + 1)}>Next</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                        <div className="cb-table-wrap">
+                            {loading ? (
+                                <div className="cb-center"><div className="cb-spinner" /></div>
+                            ) : (
+                                <table className="cb-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Username</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Country</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {players.length === 0 ? (
+                                            <tr><td colSpan={7} className="cb-empty">No players found.</td></tr>
+                                        ) : players.map((player, index) => (
+                                            <tr key={player.ID}>
+                                                <td className="cb-muted">{(pagination.page - 1) * 10 + index + 1}</td>
+                                                <td>
+                                                    <div className="cb-user">
+                                                        <div className="cb-user-av" style={{ background: 'linear-gradient(150deg,#3BE089,#1E8A52)' }}>
+                                                            {player.username?.[0]?.toUpperCase() ?? '?'}
+                                                        </div>
+                                                        <span style={{ fontWeight: 700 }}>{player.username}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="cb-muted">{player.name || '—'}</td>
+                                                <td className="cb-muted" style={{ fontSize: 13 }}>{player.email}</td>
+                                                <td className="cb-muted">{player.country || '—'}</td>
+                                                <td>
+                                                    <span className={`cb-pill ${player.status === 'active' ? 'green' : 'gold'}`}>
+                                                        <span className="dot" />{player.status}
+                                                    </span>
+                                                </td>
+                                                <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                    {new Date(player.CreatedAt).toLocaleDateString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="cb-card-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="cb-muted" style={{ fontSize: 13 }}>
+                                Page {pagination.page} of {pagination.totalPages} ({pagination.totalRows} total)
+                            </span>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p - 1)} disabled={page === 1}>
+                                    Previous
+                                </button>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p + 1)} disabled={page === pagination.totalPages}>
+                                    Next
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <Aside />
-            <Footer />
         </DashboardWrapper>
     );
 }

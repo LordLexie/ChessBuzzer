@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
-
-import './style.css';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-
 import useAuth from '../hooks/useAuth';
-import Aside from '../components/layouts/Aside';
-import Footer from '../components/layouts/Footer';
 import TopNav from '../components/layouts/TopNav';
 import Sidebar from '../components/layouts/Sidebar';
 import DashboardWrapper from '../components/layouts/DashboardWrapper';
-
+import { Icons } from '../components/ui/Icons';
 
 function PlayerTransactions() {
-
     const { auth } = useAuth();
 
     const [playerTransactions, setPlayerTransactions] = useState([]);
@@ -22,104 +16,99 @@ function PlayerTransactions() {
     const searchTransactions = (currentPage) => {
         axios.post('/api/v1/transactions', { player_id: auth.user_id, page: currentPage, page_size: 10 })
             .then(response => {
-                const { data, page, total_pages, total_rows } = response.data;
+                const { data, page: p, total_pages, total_rows } = response.data;
                 setPlayerTransactions(data);
-                setPagination({ page, totalPages: total_pages, totalRows: total_rows });
+                setPagination({ page: p, totalPages: total_pages, totalRows: total_rows });
             })
             .catch(error => console.error('Error fetching transactions:', error));
     };
 
-    useEffect(() => {
-        searchTransactions(page);
-    }, [page]);
+    useEffect(() => { searchTransactions(page); }, [page]);
 
     const goToPage = (newPage) => setPage(newPage);
 
     return (
         <DashboardWrapper>
-            <TopNav />
             <Sidebar />
-
-            <div className="content-wrapper">
-                <div className="content-header">
-                    <div className="container-fluid">
-                        <div className="row mb-2">
-                            <div className="col-sm-6">
-                                <h1 className="m-0">Transactions</h1>
-                            </div>
+            <div className="cb-main">
+                <TopNav />
+                <div className="cb-body">
+                    <div className="cb-card">
+                        <div className="cb-card-head">
+                            <Icons.swap size={20} />
+                            <h2>Transactions</h2>
+                            <span className="cb-hint">{pagination.totalRows} total</span>
                         </div>
-                    </div>
-                </div>
 
-                <div className="content">
-                    <div className="container-fluid">
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="card">
-                                    <div className="card-body table-responsive">
-                                        <table className="table table-hover text-nowrap">
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ fontSize: '14px' }}>#</th>
-                                                    <th style={{ fontSize: '14px' }}>Date</th>
-                                                    <th style={{ fontSize: '14px' }}>Amount</th>
-                                                    <th style={{ fontSize: '14px' }}>Type</th>
-                                                    <th style={{ fontSize: '14px' }}>Reference</th>
-                                                    <th style={{ fontSize: '14px' }}>Narration</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {playerTransactions.map((transaction, index) => (
-                                                    <tr key={transaction.ID}>
-                                                        <td style={{ fontSize: '13px' }}>{index + 1}</td>
-                                                        <td style={{ fontSize: '13px' }}>
-                                                            {new Date(transaction.CreatedAt).toLocaleString("en-KE", {
-                                                                year: "numeric",
-                                                                month: "2-digit",
-                                                                day: "2-digit"
-                                                            })}
-                                                        </td>
-                                                        <td style={{ fontSize: '13px' }}>{transaction.Amount}</td>
-                                                        <td style={{ fontSize: '13px' }}>
-                                                            <span className={`badge badge-${transaction.TransactionType?.toLowerCase() === 'credit' ? 'success' : 'danger'}`}>
-                                                                {transaction.TransactionType?.toLowerCase()}
-                                                            </span>
-                                                        </td>
-                                                        <td style={{ fontSize: '13px' }}>{transaction.Reference}</td>
-                                                        <td style={{ fontSize: '13px' }}>{transaction.Description}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="card-footer d-flex justify-content-between align-items-center">
-                                        <span style={{ fontSize: '13px' }}>
-                                            Page {pagination.page} of {pagination.totalPages} &nbsp;({pagination.totalRows} total)
-                                        </span>
-                                        <ul className="pagination pagination-sm mb-0">
-                                            <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => goToPage(pagination.page - 1)}>Previous</button>
-                                            </li>
-                                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-                                                <li key={p} className={`page-item ${pagination.page === p ? 'active' : ''}`}>
-                                                    <button className="page-link" onClick={() => goToPage(p)}>{p}</button>
-                                                </li>
-                                            ))}
-                                            <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => goToPage(pagination.page + 1)}>Next</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="cb-table-wrap">
+                            <table className="cb-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Type</th>
+                                        <th>Reference</th>
+                                        <th>Narration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {playerTransactions.map((t, i) => (
+                                        <tr key={t.ID}>
+                                            <td className="cb-muted">{(pagination.page - 1) * 10 + i + 1}</td>
+                                            <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                {new Date(t.CreatedAt).toLocaleDateString('en-KE')}
+                                            </td>
+                                            <td>
+                                                <span className={`cb-mono ${t.TransactionType?.toLowerCase() === 'credit' ? 'green' : 'coral'}`}>
+                                                    {t.Amount}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`cb-pill ${t.TransactionType?.toLowerCase() === 'credit' ? 'green' : 'coral'}`}>
+                                                    <span className="dot" />
+                                                    {t.TransactionType?.toLowerCase()}
+                                                </span>
+                                            </td>
+                                            <td style={{ fontSize: 13, color: '#8A9D92' }}>{t.Reference}</td>
+                                            <td style={{ fontSize: 13 }}>{t.Description}</td>
+                                        </tr>
+                                    ))}
+                                    {playerTransactions.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="cb-empty">No transactions yet.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
+
+                        {pagination.totalPages > 1 && (
+                            <div className="cb-card-foot">
+                                <span className="cb-muted" style={{ fontSize: 13, marginRight: 'auto' }}>
+                                    Page {pagination.page} of {pagination.totalPages}
+                                </span>
+                                <button
+                                    className="cb-btn cb-btn-ghost"
+                                    disabled={pagination.page === 1}
+                                    onClick={() => goToPage(pagination.page - 1)}
+                                    style={{ padding: '7px 14px', fontSize: 13 }}
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    className="cb-btn cb-btn-ghost"
+                                    disabled={pagination.page === pagination.totalPages}
+                                    onClick={() => goToPage(pagination.page + 1)}
+                                    style={{ padding: '7px 14px', fontSize: 13 }}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
-
-            <Aside />
-            <Footer />
         </DashboardWrapper>
     );
 }

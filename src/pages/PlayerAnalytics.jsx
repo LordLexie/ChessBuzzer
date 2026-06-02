@@ -1,62 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import './style.css';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
 import useAuth from '../hooks/useAuth';
-import Aside from '../components/layouts/Aside';
-import Footer from '../components/layouts/Footer';
 import TopNav from '../components/layouts/TopNav';
 import Sidebar from '../components/layouts/Sidebar';
 import DashboardWrapper from '../components/layouts/DashboardWrapper';
+import { Icons } from '../components/ui/Icons';
 import {
-    Cell,
-    LineChart, Line,
-    BarChart, Bar,
-    XAxis, YAxis, CartesianGrid,
-    Tooltip, Legend, ResponsiveContainer,
+    Cell, LineChart, Line, BarChart, Bar,
+    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 
-const COLOR_WIN   = '#2d6a4f';
-const COLOR_LOSS  = '#c1121f';
-const COLOR_DRAW  = '#6c757d';
-const COLOR_BLITZ = '#1a6496';
-const COLOR_ELO   = '#6f42c1';
+const C_WIN   = '#3BE089';
+const C_LOSS  = '#FF6A3D';
+const C_DRAW  = '#8A9D92';
+const C_ELO   = '#F2C14E';
+const C_BLITZ = '#5BB4F8';
+const GRID    = '#243029';
+const TICK    = '#8A9D92';
 
 const DAY_META = {
-    Monday:    { icon: 'calendar',       color: 'secondary' },
-    Tuesday:   { icon: 'calendar',       color: 'secondary' },
-    Wednesday: { icon: 'calendar',       color: 'info' },
-    Thursday:  { icon: 'calendar',       color: 'info' },
-    Friday:    { icon: 'calendar-check', color: 'primary' },
-    Saturday:  { icon: 'chess',          color: 'success' },
-    Sunday:    { icon: 'chess',          color: 'success' },
+    Monday:    {}, Tuesday: {}, Wednesday: {}, Thursday: {},
+    Friday:    {}, Saturday: {}, Sunday: {},
 };
-
 const TIME_META = {
-    Morning:      { icon: 'sun',   color: 'warning', timeRange: '6:00am – Noon' },
-    Afternoon:    { icon: 'cloud', color: 'info',    timeRange: 'Noon – 6:00pm' },
-    Evening:      { icon: 'moon',  color: 'primary', timeRange: '6:00pm – Midnight' },
-    'Late Night': { icon: 'star',  color: 'dark',    timeRange: 'Midnight – 6:00am' },
+    Morning:      { timeRange: '6:00am – Noon' },
+    Afternoon:    { timeRange: 'Noon – 6:00pm' },
+    Evening:      { timeRange: '6:00pm – Midnight' },
+    'Late Night': { timeRange: 'Midnight – 6:00am' },
 };
-
 const LOSS_META = {
-    Timeout:    { icon: 'hourglass-end', color: 'warning' },
-    Checkmated: { icon: 'chess-king',    color: 'danger' },
-    Resigned:   { icon: 'flag',          color: 'secondary' },
-    Abandoned:  { icon: 'plug',          color: 'dark' },
+    Timeout: {}, Checkmated: {}, Resigned: {}, Abandoned: {},
 };
 
-function StatCard({ icon, color, label, value, sub }) {
+function StatCard({ icon, color, label, value }) {
+    const colorMap = { green: 's-green', gold: 's-gold', coral: 's-coral', blue: 's-blue' };
+    const iconMap  = { green: <Icons.trophy size={20} />, gold: <Icons.chart size={20} />, coral: <Icons.x size={20} />, blue: <Icons.grid size={20} /> };
     return (
-        <div className={`small-box bg-${color}`}>
-            <div className="inner">
-                <h3>{value ?? <i className="fas fa-spinner fa-spin" />}</h3>
-                {sub && <small>{sub}</small>}
-                <p>{label}</p>
-            </div>
-            <div className="icon">
-                <i className={`fas fa-${icon}`}></i>
-            </div>
+        <div className={`cb-stat ${colorMap[color] || 's-green'}`}>
+            <div className="ic">{icon || iconMap[color]}</div>
+            <div className="lab">{label}</div>
+            <div className="big">{value ?? '—'}</div>
         </div>
     );
 }
@@ -70,16 +54,16 @@ function PlayerAnalytics() {
     const [distributionRange, setDistributionRange] = useState('');
     const distRangeReady = useRef(false);
 
-    const [kpi, setKpi]                   = useState(null);
-    const [eloHistory, setEloHistory]     = useState([]);
-    const [gameHistory, setGameHistory]   = useState([]);
+    const [kpi, setKpi]               = useState(null);
+    const [eloHistory, setEloHistory] = useState([]);
+    const [gameHistory, setGameHistory] = useState([]);
     const [timeControls, setTimeControls] = useState([]);
     const [colorWinRate, setColorWinRate] = useState([]);
     const [topOpenings, setTopOpenings]   = useState([]);
     const [lossBreakdown, setLossBreakdown] = useState([]);
-    const [dayDist, setDayDist]           = useState([]);
-    const [timeDist, setTimeDist]         = useState([]);
-    const [milestones, setMilestones]     = useState(null);
+    const [dayDist, setDayDist]         = useState([]);
+    const [timeDist, setTimeDist]       = useState([]);
+    const [milestones, setMilestones]   = useState(null);
 
     const loadAnalytics = (data) => {
         setKpi(data.kpi);
@@ -98,18 +82,12 @@ function PlayerAnalytics() {
     useEffect(() => {
         axios.get(`api/v1/user/${userId}`)
             .then(res => {
-                const user = res.data.data;
-                if (user.analytics_key) {
-                    return axios.get('api/v1/analytics')
-                        .then(r => loadAnalytics(r.data.data));
-                } else {
-                    setIntegrated(false);
+                if (res.data.data.analytics_key) {
+                    return axios.get('api/v1/analytics').then(r => loadAnalytics(r.data.data));
                 }
-            })
-            .catch(() => {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load analytics.' });
                 setIntegrated(false);
-            });
+            })
+            .catch(() => { toast.error('Failed to load analytics.'); setIntegrated(false); });
     }, [userId]);
 
     useEffect(() => {
@@ -126,497 +104,335 @@ function PlayerAnalytics() {
     }, [distributionRange]);
 
     const RANGES = [['1w', '1W'], ['1m', '1M'], ['1y', '1Y'], ['', 'All']];
-    function RangeButtons() {
-        return RANGES.map(([val, label]) => (
-            <button
-                key={val}
-                className={`btn btn-xs ${distributionRange === val ? 'btn-primary' : 'btn-default'} mr-1`}
-                onClick={() => setDistributionRange(val)}
-            >{label}</button>
-        ));
-    }
 
     const handleIntegrate = () => {
         setIntegrating(true);
         axios.post('api/v1/analytics/integrate')
             .then(() => axios.get('api/v1/analytics'))
             .then(res => loadAnalytics(res.data.data))
-            .catch(() => {
-                Swal.fire({ icon: 'error', title: 'Failed', text: 'Could not connect to analytics service. Please try again.' });
-            })
+            .catch(() => toast.error('Could not connect to analytics service.'))
             .finally(() => setIntegrating(false));
+    };
+
+    if (integrated === null) {
+        return (
+            <DashboardWrapper>
+                <Sidebar />
+                <div className="cb-main"><TopNav />
+                    <div className="cb-body"><div className="cb-center"><div className="cb-spinner" /></div></div>
+                </div>
+            </DashboardWrapper>
+        );
+    }
+
+    if (integrated === false) {
+        return (
+            <DashboardWrapper>
+                <Sidebar />
+                <div className="cb-main"><TopNav />
+                    <div className="cb-body">
+                        <div style={{ maxWidth: 480 }}>
+                            <div className="cb-card">
+                                <div className="cb-card-body" style={{ textAlign: 'center', padding: '48px 32px' }}>
+                                    <div style={{ fontSize: 48, marginBottom: 18 }}>♟</div>
+                                    <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 800, fontSize: 22, marginBottom: 10 }}>
+                                        Connect Your Analytics
+                                    </div>
+                                    <p className="cb-muted" style={{ marginBottom: 24 }}>
+                                        Your account isn't connected to the analytics service yet.
+                                        Click below to set it up — it only takes a second.
+                                    </p>
+                                    <button className="cb-btn cb-btn-primary" onClick={handleIntegrate} disabled={integrating}>
+                                        {integrating ? <><span className="cb-spinner sm" /> Connecting…</> : 'Connect Now'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </DashboardWrapper>
+        );
+    }
+
+    const chartProps = {
+        grid:    <CartesianGrid strokeDasharray="3 3" stroke={GRID} />,
+        xAxis:   (key) => <XAxis dataKey={key} tick={{ fontSize: 11, fill: TICK, angle: -45, textAnchor: 'end' }} height={50} />,
+        yAxis:   <YAxis tick={{ fontSize: 12, fill: TICK }} />,
+        tooltip: <Tooltip contentStyle={{ background: '#121C18', border: '1px solid #243029', color: '#E8F1EB', borderRadius: 10 }} />,
     };
 
     return (
         <DashboardWrapper>
-            <TopNav />
             <Sidebar />
+            <div className="cb-main">
+                <TopNav />
+                <div className="cb-body">
 
-            <div className="content-wrapper">
-
-                <div className="content-header">
-                    <div className="container-fluid">
-                        <div className="row mb-2">
-                            <div className="col-sm-6">
-                                <h1 className="m-0">
-                                    <i className="fas fa-chart-line mr-2"></i>
-                                    Analytics
-                                </h1>
-                            </div>
-                            <div className="col-sm-6 text-right">
-                                <small className="text-muted">
-                                    chess.com · {auth?.username}
-                                </small>
-                            </div>
-                        </div>
+                    {/* KPI row */}
+                    <div className="cb-stats" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+                        <StatCard color="blue"  label="Total Games" value={kpi?.totalGames} icon={<Icons.grid size={20} />} />
+                        <StatCard color="green" label="Wins"        value={kpi?.totalWins} />
+                        <StatCard color="coral" label="Losses"      value={kpi?.totalLosses} />
+                        <StatCard color="gold"  label="Draws"       value={kpi?.totalDraws} icon={<Icons.medal size={20} />} />
                     </div>
-                </div>
 
-                <div className="content">
-                    <div className="container-fluid">
+                    {/* Charts row */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 26 }}>
+                        {/* Left column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
 
-                        {integrated === null && (
-                            <div className="text-center py-5">
-                                <i className="fas fa-spinner fa-spin fa-2x text-muted"></i>
-                                <p className="mt-2 text-muted">Loading analytics...</p>
-                            </div>
-                        )}
-
-                        {integrated === false && (
-                            <div className="row justify-content-center">
-                                <div className="col-md-6">
-                                    <div className="card card-outline card-primary text-center">
-                                        <div className="card-body py-5">
-                                            <i className="fas fa-chess fa-4x text-primary mb-3"></i>
-                                            <h3 className="mb-2">Connect Your Analytics</h3>
-                                            <p className="text-muted mb-4">
-                                                Your account isn't connected to the analytics service yet.<br />
-                                                Click below to set it up — it only takes a second.
-                                            </p>
-                                            <button
-                                                className="btn btn-primary btn-lg"
-                                                onClick={handleIntegrate}
-                                                disabled={integrating}
-                                            >
-                                                {integrating
-                                                    ? <><i className="fas fa-spinner fa-spin mr-2"></i>Connecting...</>
-                                                    : <><i className="fas fa-plug mr-2"></i>Connect Now</>
-                                                }
-                                            </button>
-                                        </div>
-                                    </div>
+                            {/* ELO History */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.chart size={20} /><h2>ELO Rating History</h2></div>
+                                <div className="cb-card-body">
+                                    <ResponsiveContainer width="100%" height={220}>
+                                        <LineChart data={eloHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                            {chartProps.grid}
+                                            {chartProps.xAxis('month')}
+                                            {chartProps.yAxis}
+                                            {chartProps.tooltip}
+                                            <Line type="monotone" dataKey="rating" stroke={C_ELO} strokeWidth={2} dot={{ r: 3 }} name="Rating" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
                                 </div>
                             </div>
-                        )}
 
-                        {integrated === true && (<>
+                            {/* Performance Trends */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.bar size={20} /><h2>Performance Trends</h2></div>
+                                <div className="cb-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                                    <ResponsiveContainer width="100%" height={200}>
+                                        <LineChart data={gameHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                            {chartProps.grid}
+                                            {chartProps.xAxis('month')}
+                                            {chartProps.yAxis}
+                                            {chartProps.tooltip}
+                                            <Legend wrapperStyle={{ color: TICK, fontSize: 13 }} />
+                                            <Line type="monotone" dataKey="wins"   stroke={C_WIN}  strokeWidth={2} dot={{ r: 3 }} name="Wins" />
+                                            <Line type="monotone" dataKey="losses" stroke={C_LOSS} strokeWidth={2} dot={{ r: 3 }} name="Losses" />
+                                            <Line type="monotone" dataKey="draws"  stroke={C_DRAW} strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3 }} name="Draws" />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                    <ResponsiveContainer width="100%" height={200}>
+                                        <BarChart data={gameHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                            {chartProps.grid}
+                                            {chartProps.xAxis('month')}
+                                            {chartProps.yAxis}
+                                            {chartProps.tooltip}
+                                            <Legend wrapperStyle={{ color: TICK, fontSize: 13 }} />
+                                            <Bar dataKey="wins"   stackId="a" fill={C_WIN}  name="Wins" />
+                                            <Bar dataKey="losses" stackId="a" fill={C_LOSS} name="Losses" />
+                                            <Bar dataKey="draws"  stackId="a" fill={C_DRAW} name="Draws" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
 
-                        {/* Row 1 — KPI Cards */}
-                        <div className="row">
-                            <div className="col-6 col-md-3">
-                                <StatCard icon="chess" color="info"
-                                          label="Total Games" value={kpi?.totalGames} />
+                            {/* Day Distribution */}
+                            <div className="cb-card">
+                                <div className="cb-card-head">
+                                    <Icons.calendar size={20} />
+                                    <h2>Games by Day</h2>
+                                    <span className="cb-hint" style={{ display: 'flex', gap: 6 }}>
+                                        {RANGES.map(([val, label]) => (
+                                            <button key={val}
+                                                className={`cb-tab ${distributionRange === val ? 'active' : ''}`}
+                                                style={{ padding: '3px 10px', fontSize: 12 }}
+                                                onClick={() => setDistributionRange(val)}>{label}</button>
+                                        ))}
+                                    </span>
+                                </div>
+                                <div className="cb-table-wrap">
+                                    <table className="cb-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Day</th>
+                                                <th style={{ textAlign: 'center' }}>Games</th>
+                                                <th style={{ textAlign: 'center' }}>Wins</th>
+                                                <th style={{ textAlign: 'center' }}>Losses</th>
+                                                <th style={{ textAlign: 'center' }}>Draws</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {dayDist.map((row, i) => (
+                                                <tr key={i}>
+                                                    <td style={{ fontWeight: 700 }}>{row.day}</td>
+                                                    <td style={{ textAlign: 'center' }}>{row.games}</td>
+                                                    <td style={{ textAlign: 'center', color: C_WIN, fontWeight: 700 }}>{row.wins}</td>
+                                                    <td style={{ textAlign: 'center', color: C_LOSS, fontWeight: 700 }}>{row.losses}</td>
+                                                    <td style={{ textAlign: 'center', color: C_DRAW }}>{row.draws}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div className="col-6 col-md-3">
-                                <StatCard icon="trophy" color="success"
-                                          label="Wins" value={kpi ? kpi.totalWins : null}  />
+
+                            {/* Time Distribution */}
+                            <div className="cb-card">
+                                <div className="cb-card-head">
+                                    <Icons.clock size={20} />
+                                    <h2>Games by Time of Day</h2>
+                                </div>
+                                <div className="cb-table-wrap">
+                                    <table className="cb-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Period</th>
+                                                <th style={{ textAlign: 'center' }}>Games</th>
+                                                <th style={{ textAlign: 'center' }}>Wins</th>
+                                                <th style={{ textAlign: 'center' }}>Losses</th>
+                                                <th style={{ textAlign: 'center' }}>Draws</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {timeDist.map((row, i) => (
+                                                <tr key={i}>
+                                                    <td>
+                                                        <span style={{ fontWeight: 700 }}>{row.period}</span>
+                                                        <span className="cb-muted" style={{ fontSize: 12, marginLeft: 8 }}>{row.timeRange}</span>
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>{row.games}</td>
+                                                    <td style={{ textAlign: 'center', color: C_WIN, fontWeight: 700 }}>{row.wins}</td>
+                                                    <td style={{ textAlign: 'center', color: C_LOSS, fontWeight: 700 }}>{row.losses}</td>
+                                                    <td style={{ textAlign: 'center', color: C_DRAW }}>{row.draws}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div className="col-6 col-md-3">
-                                <StatCard icon="times-circle" color="danger"
-                                          label="Losses" value={kpi ? kpi.totalLosses : null} />
-                            </div>
-                            <div className="col-6 col-md-3">
-                                <StatCard icon="handshake" color="secondary"
-                                          label="Draws" value={kpi ? kpi.totalDraws : null} />
-                            </div>
+
                         </div>
 
-                        {/* Row 2 — Performance Trends (shared card) */}
-                        <div className="row">
-                            <div className="col-md-8">
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-chart-line mr-1"></i>
-                                            ELO Rating History
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body">
-                                        <ResponsiveContainer width="100%" height={220}>
-                                            <LineChart data={eloHistory}
-                                                       margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" />
-                                                <XAxis dataKey="month" tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }} height={50} />
-                                                <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} />
-                                                <Tooltip formatter={v => [v, 'Rating']} />
-                                                <Line type="monotone" dataKey="rating"
-                                                      stroke={COLOR_ELO} strokeWidth={2}
-                                                      dot={{ r: 3 }} name="Rating" />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
+                        {/* Right column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+
+                            {/* Time Controls */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.clock size={20} /><h2>By Time Control</h2></div>
+                                <div className="cb-card-body">
+                                    <ResponsiveContainer width="100%" height={220}>
+                                        <BarChart data={timeControls} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                            {chartProps.grid}
+                                            {chartProps.xAxis('name')}
+                                            {chartProps.yAxis}
+                                            {chartProps.tooltip}
+                                            <Bar dataKey="games" fill={C_BLITZ} radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
-
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-chart-bar mr-1"></i>
-                                            Performance Trends
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body">
-                                        <small className="text-muted d-block mb-2">Trends over time</small>
-                                        <ResponsiveContainer width="100%" height={220}>
-                                            <LineChart data={gameHistory}
-                                                       margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" />
-                                                <XAxis dataKey="month" tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }} height={50} />
-                                                <YAxis tick={{ fontSize: 12 }} />
-                                                <Tooltip />
-                                                <Legend />
-                                                <Line type="monotone" dataKey="wins"
-                                                      stroke={COLOR_WIN} strokeWidth={2}
-                                                      dot={{ r: 3 }} name="Wins" />
-                                                <Line type="monotone" dataKey="losses"
-                                                      stroke={COLOR_LOSS} strokeWidth={2}
-                                                      dot={{ r: 3 }} name="Losses" />
-                                                <Line type="monotone" dataKey="draws"
-                                                      stroke={COLOR_DRAW} strokeWidth={2}
-                                                      strokeDasharray="4 4" dot={{ r: 3 }} name="Draws" />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-
-                                        <hr className="mt-2 mb-3" />
-
-                                        <small className="text-muted d-block mb-2">Monthly breakdown</small>
-                                        <ResponsiveContainer width="100%" height={220}>
-                                            <BarChart data={gameHistory}
-                                                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" />
-                                                <XAxis dataKey="month" tick={{ fontSize: 11, angle: -45, textAnchor: 'end' }} height={50} />
-                                                <YAxis tick={{ fontSize: 12 }} />
-                                                <Tooltip />
-                                                <Legend />
-                                                <Bar dataKey="wins"   stackId="a" fill={COLOR_WIN}  name="Wins" />
-                                                <Bar dataKey="losses" stackId="a" fill={COLOR_LOSS} name="Losses" />
-                                                <Bar dataKey="draws"  stackId="a" fill={COLOR_DRAW} name="Draws"
-                                                     radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </div>
-
-                                                                <div className="card collapsed-card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-calendar-week mr-1"></i>
-                                            Games by Day of Week
-                                        </h3>
-                                        <div className="card-tools d-flex align-items-center">
-                                            <RangeButtons />
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body p-0">
-                                        <table className="table table-sm table-hover mb-0">
-                                            <thead className="thead-light">
-                                                <tr>
-                                                    <th style={{ width: '44px' }}></th>
-                                                    <th>Day</th>
-                                                    <th style={{ width: '70px' }} className="text-center">Games</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Wins</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Losses</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Draws</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {dayDist.map((row, i) => (
-                                                    <tr key={i}>
-                                                        <td className="text-center">
-                                                            <i className={`fas fa-${row.icon} text-${row.color}`}></i>
-                                                        </td>
-                                                        <td><strong>{row.day}</strong></td>
-                                                        <td className="text-center">{row.games}</td>
-                                                        <td className="text-center text-success"><strong>{row.wins}</strong></td>
-                                                        <td className="text-center text-danger"><strong>{row.losses}</strong></td>
-                                                        <td className="text-center text-secondary">{row.draws}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-
-                                    <div className="card collapsed-card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-clock mr-1"></i>
-                                            Games by Time of Day
-                                        </h3>
-                                        <div className="card-tools d-flex align-items-center">
-                                            <RangeButtons />
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-plus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body p-0">
-                                        <table className="table table-sm table-hover mb-0">
-                                            <thead className="thead-light">
-                                                <tr>
-                                                    <th style={{ width: '44px' }}></th>
-                                                    <th>Period</th>
-                                                    <th style={{ width: '70px' }} className="text-center">Games</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Wins</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Losses</th>
-                                                    <th style={{ width: '60px' }} className="text-center">Draws</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {timeDist.map((row, i) => (
-                                                    <tr key={i}>
-                                                        <td className="text-center">
-                                                            <i className={`fas fa-${row.icon} text-${row.color}`}></i>
-                                                        </td>
-                                                        <td>
-                                                            <strong>{row.period}</strong>
-                                                            <br />
-                                                            <small className="text-muted">{row.timeRange}</small>
-                                                        </td>
-                                                        <td className="text-center">{row.games}</td>
-                                                        <td className="text-center text-success"><strong>{row.wins}</strong></td>
-                                                        <td className="text-center text-danger"><strong>{row.losses}</strong></td>
-                                                        <td className="text-center text-secondary">{row.draws}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
                             </div>
 
-                            <div className="col-md-4">
-
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-clock mr-1"></i>
-                                            Games by Time Control
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body">
-                                        <ResponsiveContainer width="100%" height={240}>
-                                            <BarChart data={timeControls}
-                                                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" />
-                                                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                                                <YAxis tick={{ fontSize: 12 }} />
-                                                <Tooltip />
-                                                <Bar dataKey="games" fill={COLOR_BLITZ}
-                                                     radius={[4, 4, 0, 0]} />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
+                            {/* Color Win Rate */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.grid size={20} /><h2>White vs Black</h2></div>
+                                <div className="cb-card-body">
+                                    <ResponsiveContainer width="100%" height={200}>
+                                        <BarChart data={colorWinRate} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                            {chartProps.grid}
+                                            {chartProps.xAxis('color')}
+                                            <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 12, fill: TICK }} />
+                                            <Tooltip formatter={v => [`${v}%`, 'Win Rate']} contentStyle={{ background: '#121C18', border: '1px solid #243029', color: '#E8F1EB', borderRadius: 10 }} />
+                                            <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
+                                                {colorWinRate.map((_, i) => (
+                                                    <Cell key={i} fill={i === 0 ? '#E8F1EB' : '#8A9D92'} />
+                                                ))}
+                                            </Bar>
+                                        </BarChart>
+                                    </ResponsiveContainer>
                                 </div>
+                            </div>
 
-                                 <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-chess mr-1"></i>
-                                            Win Rate: White vs Black
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body">
-                                        <ResponsiveContainer width="100%" height={240}>
-                                            <BarChart data={colorWinRate}
-                                                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" />
-                                                <XAxis dataKey="color" tick={{ fontSize: 13 }} />
-                                                <YAxis domain={[0, 100]}
-                                                       tickFormatter={v => `${v}%`}
-                                                       tick={{ fontSize: 12 }} />
-                                                <Tooltip formatter={v => [`${v}%`, 'Win Rate']} />
-                                                <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
-                                                    {colorWinRate.map((_, i) => (
-                                                        <Cell key={i}
-                                                              fill={i === 0 ? '#343a40' : '#adb5bd'} />
-                                                    ))}
-                                                </Bar>
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </div>
-
-
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-skull mr-1"></i>
-                                            How I Lose
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="card-body p-0">
-                                        <table className="table table-sm table-hover mb-0">
-                                            <thead className="thead-light">
-                                                <tr>
-                                                    <th style={{ width: '44px' }}></th>
-                                                    <th>Loss Type</th>
-                                                    <th style={{ width: '80px' }} className="text-center">Games</th>
-                                                    <th style={{ width: '90px' }} className="text-center">% of Losses</th>
-                                                    <th>Breakdown</th>
+                            {/* How I Lose */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.x size={20} /><h2>How I Lose</h2></div>
+                                <div className="cb-table-wrap">
+                                    <table className="cb-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Loss Type</th>
+                                                <th style={{ textAlign: 'center' }}>Games</th>
+                                                <th>%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {lossBreakdown.map((row, i) => (
+                                                <tr key={i}>
+                                                    <td style={{ fontWeight: 700 }}>{row.type}</td>
+                                                    <td style={{ textAlign: 'center' }}>{row.games}</td>
+                                                    <td>
+                                                        <div className="cb-pctbar">
+                                                            <div className="track"><div className="fill" style={{ width: `${row.pct}%`, background: C_LOSS }} /></div>
+                                                            <span>{row.pct}%</span>
+                                                        </div>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {lossBreakdown.map((row, i) => (
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* Top Openings */}
+                            <div className="cb-card">
+                                <div className="cb-card-head"><Icons.trophy size={20} /><h2>Top Openings</h2></div>
+                                <div className="cb-table-wrap">
+                                    <table className="cb-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Opening</th>
+                                                <th style={{ textAlign: 'right' }}>Win Rate</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {topOpenings.map((row, i) => {
+                                                const color = row.winRate >= 65 ? C_WIN : row.winRate >= 50 ? '#F2C14E' : C_LOSS;
+                                                return (
                                                     <tr key={i}>
-                                                        <td className="text-center">
-                                                            <i className={`fas fa-${row.icon} text-${row.color}`}></i>
-                                                        </td>
-                                                        <td><strong>{row.type}</strong></td>
-                                                        <td className="text-center">{row.games}</td>
-                                                        <td className="text-center">
-                                                            <span className={`badge badge-${row.color}`}>{row.pct}%</span>
-                                                        </td>
-                                                        <td>
-                                                            <div className="progress" style={{ height: '8px', marginTop: '4px' }}>
-                                                                <div
-                                                                    className={`progress-bar bg-${row.color}`}
-                                                                    style={{ width: `${row.pct}%` }}
-                                                                />
-                                                            </div>
+                                                        <td style={{ fontSize: 13 }}>{row.opening}</td>
+                                                        <td style={{ textAlign: 'right' }}>
+                                                            <span className="cb-mono" style={{ color, fontSize: 14 }}>{row.winRate}%</span>
                                                         </td>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
+                            </div>
 
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-chess mr-1"></i>
-                                            Top 5 Openings by Win Rate
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
+                            {/* Streaks & Rivals */}
+                            {milestones && (
+                                <div className="cb-card">
+                                    <div className="cb-card-head"><Icons.sparkles size={20} /><h2>Streaks &amp; Rivals</h2></div>
+                                    <div className="cb-card-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span className="cb-muted" style={{ fontSize: 13 }}>Longest Win Streak</span>
+                                            <span className="cb-mono green">{milestones.longestWinStreak} games</span>
                                         </div>
-                                    </div>
-                                    <div className="card-body p-0">
-                                        <table className="table table-sm table-hover mb-0">
-                                            <thead className="thead-light">
-                                                <tr>
-                                                    <th style={{ width: '36px' }}></th>
-                                                    <th>Opening</th>
-                                                    <th className="text-right">Win Rate</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {topOpenings.map((row, i) => {
-                                                    const pieces = [
-                                                        'chess-queen', 'chess-rook', 'chess-bishop',
-                                                        'chess-knight', 'chess-pawn'
-                                                    ];
-                                                    const badgeClass = row.winRate >= 65
-                                                        ? 'badge-success'
-                                                        : row.winRate >= 50
-                                                        ? 'badge-warning'
-                                                        : 'badge-danger';
-                                                    return (
-                                                        <tr key={i}>
-                                                            <td className="text-center text-muted">
-                                                                <i className={`fas fa-${pieces[i]}`}></i>
-                                                            </td>
-                                                            <td>{row.opening}</td>
-                                                            <td className="text-right">
-                                                                <span className={`badge ${badgeClass}`}>
-                                                                    {row.winRate}%
-                                                                </span>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">
-                                            <i className="fas fa-trophy mr-1"></i>
-                                            Streaks &amp; Rivals
-                                        </h3>
-                                        <div className="card-tools">
-                                            <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span className="cb-muted" style={{ fontSize: 13 }}>Longest Loss Streak</span>
+                                            <span className="cb-mono coral">{milestones.longestLossStreak} games</span>
                                         </div>
-                                    </div>
-                                    <div className="card-body p-0">
-                                    <ul className="list-group list-group-flush">
-                                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span><i className="fas fa-fire text-success mr-2"></i> Longest Win Streak</span>
-                                            <strong className="text-success">{milestones?.longestWinStreak} games</strong>
-                                        </li>
-                                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span><i className="fas fa-skull text-danger mr-2"></i> Longest Loss Streak</span>
-                                            <strong className="text-danger">{milestones?.longestLossStreak} games</strong>
-                                        </li>
-                                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span><i className="fas fa-user text-info mr-2"></i> Nem</span>
-                                            <span>
-                                                <strong>{milestones?.mostPlayedOpponent.username}</strong>
-                                                <small className="text-muted ml-1">· {milestones?.mostPlayedOpponent.games} games</small>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span className="cb-muted" style={{ fontSize: 13 }}>Nemesis</span>
+                                            <span style={{ fontWeight: 700, fontSize: 14 }}>
+                                                {milestones.mostPlayedOpponent.username}
+                                                <span className="cb-muted" style={{ fontSize: 12, fontWeight: 400, marginLeft: 6 }}>
+                                                    · {milestones.mostPlayedOpponent.games} games
+                                                </span>
                                             </span>
-                                        </li>
-                                    </ul>
+                                        </div>
                                     </div>
                                 </div>
-
-                            </div>
+                            )}
 
                         </div>
-
-                        </>)}
-
                     </div>
+
                 </div>
             </div>
-
-            <Aside />
-            <Footer />
         </DashboardWrapper>
     );
 }

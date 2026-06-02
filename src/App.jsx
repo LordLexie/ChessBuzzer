@@ -2,6 +2,7 @@ import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 import Login from './pages/Login.jsx'
@@ -18,6 +19,7 @@ import AdminPlayerArchives from './pages/admin/AdminPlayerArchives.jsx'
 import AdminPlayerArchiveProfile from './pages/admin/AdminPlayerArchiveProfile.jsx'
 import AdminMarketingTargets from './pages/admin/AdminMarketingTargets.jsx'
 import AdminTimeAnalytics from './pages/admin/AdminTimeAnalytics.jsx'
+import AdminSettings from './pages/admin/AdminSettings.jsx'
 import PlayerDashboard from './pages/PlayerDashboard.jsx'
 import PlayerTransactions from './pages/PlayerTransactions.jsx'
 import PlayerProfile from './pages/PlayerProfile.jsx'
@@ -30,15 +32,37 @@ import ResetPassword from './pages/ResetPassword.jsx';
 import PlayerAnalytics from './pages/PlayerAnalytics.jsx';
 import PlayerArchives from './pages/PlayerArchives.jsx';
 import PlayerLeaderboard from './pages/PlayerLeaderboard.jsx';
+import OpenChallenges from './pages/OpenChallenges.jsx';
+import Tournaments from './pages/Tournaments.jsx';
+import TournamentView from './pages/TournamentView.jsx';
+import TournamentCreate from './pages/TournamentCreate.jsx';
+import TournamentEdit from './pages/TournamentEdit.jsx';
+import TournamentOrganizerView from './pages/TournamentOrganizerView.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
-axios.defaults.baseURL = "http://localhost:8888";
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8888';
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 axios.defaults.headers.post['Accept'] = 'application/json';
 axios.defaults.withCredentials = true;
 
+// Global response interceptor — redirects to login on 401
+axios.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('adminInfo');
+      window.location.href = '/';
+    }
+    return Promise.reject(err);
+  }
+);
+
 function App() {
 
   return (
+    <ErrorBoundary>
+      <Toaster position="top-right" toastOptions={{ duration: 1500, style: { zIndex: 9999 } }} />
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
@@ -61,6 +85,7 @@ function App() {
           <Route path="/admin/player-archives/:userId" element={<AdminPlayerArchiveProfile />} />
           <Route path="/admin/marketing" element={<AdminMarketingTargets />} />
           <Route path="/admin/time-analytics" element={<AdminTimeAnalytics />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
         <Route element={<PrivateRoutes />} >
@@ -70,9 +95,16 @@ function App() {
           <Route path="/analytics" element={<PlayerAnalytics />} />
           <Route path="/archives" element={<PlayerArchives />} />
           <Route path="/leaderboard" element={<PlayerLeaderboard />} />
+          <Route path="/open-challenges" element={<OpenChallenges />} />
+          <Route path="/tournaments" element={<Tournaments />} />
+          <Route path="/tournaments/new" element={<TournamentCreate />} />
+          <Route path="/tournaments/:tournamentId/edit" element={<TournamentEdit />} />
+          <Route path="/tournaments/:tournamentId/manage" element={<TournamentOrganizerView />} />
+          <Route path="/tournaments/:tournamentId" element={<TournamentView />} />
         </Route>
       </Routes>
     </Router>
+    </ErrorBoundary>
   )
 }
 

@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import DashboardWrapper from '../../components/layouts/DashboardWrapper';
 import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
-import Aside from '../../components/layouts/Aside';
-import Footer from '../../components/layouts/Footer';
+import { Icons } from '../../components/ui/Icons';
 
 function AdminCentralWalletDetail() {
     const { walletCode } = useParams();
+    const navigate = useNavigate();
     const [wallet, setWallet] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, totalRows: 0 });
@@ -34,150 +34,115 @@ function AdminCentralWalletDetail() {
 
     return (
         <DashboardWrapper>
-            <AdminTopNav />
             <AdminSidebar />
-
-            <div className="content-wrapper">
-                <div className="content-header">
-                    <div className="container-fluid">
-                        <div className="row mb-2">
-                            <div className="col-sm-6">
-                                <h1 className="m-0">Central Wallet Transactions</h1>
-                            </div>
-                            <div className="col-sm-6 text-right">
-                                <Link to="/admin/central-wallets" className="btn btn-sm btn-secondary">
-                                    ← Back to Central Wallets
-                                </Link>
-                            </div>
-                        </div>
+            <div className="cb-main">
+                <AdminTopNav />
+                <div className="cb-body">
+                    {/* Back + header */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <button className="cb-back" onClick={() => navigate('/admin/central-wallets')}>
+                            <Icons.back size={16} /> Back
+                        </button>
+                        <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 800, fontSize: 22 }}>
+                            Central Wallet — <span style={{ color: '#3BE089' }}>{walletCode}</span>
+                        </h2>
                     </div>
-                </div>
 
-                <div className="content">
-                    <div className="container-fluid">
-
-                        {wallet && (
-                            <div className="row mb-3">
-                                <div className="col-md-4">
-                                    <div className="small-box bg-info">
-                                        <div className="inner">
-                                            <h4>{wallet.Currency}</h4>
-                                            <p>Currency</p>
-                                        </div>
-                                        <div className="icon"><i className="fas fa-coins" /></div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="small-box bg-success">
-                                        <div className="inner">
-                                            <h4>{wallet.Balance?.toLocaleString()}</h4>
-                                            <p>Balance</p>
-                                        </div>
-                                        <div className="icon"><i className="fas fa-wallet" /></div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className={`small-box bg-${wallet.Status === 'active' ? 'success' : 'warning'}`}>
-                                        <div className="inner">
-                                            <h4 style={{ textTransform: 'capitalize' }}>{wallet.Status}</h4>
-                                            <p>Status</p>
-                                        </div>
-                                        <div className="icon"><i className="fas fa-info-circle" /></div>
-                                    </div>
-                                </div>
+                    {/* Wallet stat cards */}
+                    {wallet && (
+                        <div className="cb-stats" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
+                            <div className="cb-stat s-gold">
+                                <div className="cb-stat ic"><Icons.coins size={22} /></div>
+                                <div className="lab">Currency</div>
+                                <div className="big" style={{ fontSize: 30 }}>{wallet.Currency}</div>
                             </div>
-                        )}
-
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="card">
-                                    <div className="card-body table-responsive p-0">
-                                        <table className="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>#</th>
-                                                    <th style={{ fontSize: '14px' }}>Date</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Transaction Code</th>
-                                                    <th style={{ fontSize: '14px' }}>Type</th>
-                                                    <th style={{ fontSize: '14px' }}>Amount</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Channel</th>
-                                                    <th className="d-none d-md-table-cell" style={{ fontSize: '14px' }}>Party Type</th>
-                                                    <th style={{ fontSize: '14px' }}>Party</th>
-                                                    <th className="d-none d-lg-table-cell" style={{ fontSize: '14px' }}>Reference</th>
-                                                    <th className="d-none d-lg-table-cell" style={{ fontSize: '14px' }}>Description</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {loading ? (
-                                                    <tr>
-                                                        <td colSpan="10" className="text-center py-4">
-                                                            <span className="fa fa-spinner fa-spin" /> Loading...
-                                                        </td>
-                                                    </tr>
-                                                ) : transactions.length === 0 ? (
-                                                    <tr>
-                                                        <td colSpan="10" className="text-center py-4">No transactions found for this wallet.</td>
-                                                    </tr>
-                                                ) : (
-                                                    transactions.map((tx, index) => (
-                                                        <tr key={tx.ID}>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{(pagination.page - 1) * 10 + index + 1}</td>
-                                                            <td style={{ fontSize: '13px' }}>
-                                                                {new Date(tx.TransactionDate).toLocaleString('en-KE', {
-                                                                    year: 'numeric',
-                                                                    month: '2-digit',
-                                                                    day: '2-digit',
-                                                                    hour: '2-digit',
-                                                                    minute: '2-digit',
-                                                                })}
-                                                            </td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{tx.TransactionCode}</td>
-                                                            <td style={{ fontSize: '13px' }}>
-                                                                <span className={`badge badge-${tx.TransactionType?.toLowerCase() === 'credit' ? 'success' : 'danger'}`}>
-                                                                    {tx.TransactionType?.toLowerCase()}
-                                                                </span>
-                                                            </td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.Amount?.toLocaleString()}</td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{tx.Channel ?? '—'}</td>
-                                                            <td className="d-none d-md-table-cell" style={{ fontSize: '13px' }}>{tx.TransactionPartyType ?? '—'}</td>
-                                                            <td style={{ fontSize: '13px' }}>{tx.TransactionParty ?? '—'}</td>
-                                                            <td className="d-none d-lg-table-cell" style={{ fontSize: '13px' }}>{tx.Reference ?? '—'}</td>
-                                                            <td className="d-none d-lg-table-cell" style={{ fontSize: '13px' }}>{tx.Description ?? '—'}</td>
-                                                        </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div className="card-footer d-flex justify-content-between align-items-center">
-                                        <span style={{ fontSize: '13px' }}>
-                                            Page {pagination.page} of {pagination.totalPages} &nbsp;({pagination.totalRows} total)
-                                        </span>
-                                        <ul className="pagination pagination-sm mb-0">
-                                            <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p - 1)}>Previous</button>
-                                            </li>
-                                            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-                                                <li key={p} className={`page-item ${pagination.page === p ? 'active' : ''}`}>
-                                                    <button className="page-link" onClick={() => setPage(p)}>{p}</button>
-                                                </li>
-                                            ))}
-                                            <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
-                                                <button className="page-link" onClick={() => setPage(p => p + 1)}>Next</button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                            <div className="cb-stat s-green">
+                                <div className="cb-stat ic"><Icons.coins size={22} /></div>
+                                <div className="lab">Balance</div>
+                                <div className="big">{wallet.Balance?.toLocaleString()}</div>
+                            </div>
+                            <div className={`cb-stat ${wallet.Status === 'active' ? 's-green' : 's-gold'}`}>
+                                <div className="cb-stat ic"><Icons.check size={22} /></div>
+                                <div className="lab">Status</div>
+                                <div className="big" style={{ fontSize: 22, textTransform: 'capitalize' }}>{wallet.Status}</div>
                             </div>
                         </div>
+                    )}
 
+                    {/* Transactions table */}
+                    <div className="cb-card">
+                        <div className="cb-card-head">
+                            <Icons.swap size={18} />
+                            <h2>Transactions</h2>
+                            <span className="cb-count">{pagination.totalRows}</span>
+                        </div>
+                        <div className="cb-table-wrap">
+                            {loading ? (
+                                <div className="cb-center"><div className="cb-spinner" /></div>
+                            ) : (
+                                <table className="cb-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Date</th>
+                                            <th>Tx Code</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Channel</th>
+                                            <th>Party Type</th>
+                                            <th>Party</th>
+                                            <th>Reference</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {transactions.length === 0 ? (
+                                            <tr><td colSpan={10} className="cb-empty">No transactions found for this wallet.</td></tr>
+                                        ) : transactions.map((tx, i) => {
+                                            const isCredit = tx.TransactionType?.toLowerCase() === 'credit';
+                                            return (
+                                                <tr key={tx.ID}>
+                                                    <td className="cb-muted">{(pagination.page - 1) * 10 + i + 1}</td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                        {new Date(tx.TransactionDate).toLocaleString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </td>
+                                                    <td><span className="cb-mono" style={{ fontSize: 12, color: '#8A9D92' }}>{tx.TransactionCode}</span></td>
+                                                    <td>
+                                                        <span className={`cb-pill ${isCredit ? 'green' : 'coral'}`}>
+                                                            <span className="dot" />{tx.TransactionType?.toLowerCase()}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`cb-mono ${isCredit ? 'green' : 'coral'}`} style={{ fontSize: 14 }}>
+                                                            {tx.Amount?.toLocaleString()}
+                                                        </span>
+                                                    </td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>{tx.Channel ?? '—'}</td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>{tx.TransactionPartyType ?? '—'}</td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>{tx.TransactionParty ?? '—'}</td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>{tx.Reference ?? '—'}</td>
+                                                    <td className="cb-muted" style={{ fontSize: 13 }}>{tx.Description ?? '—'}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="cb-card-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span className="cb-muted" style={{ fontSize: 13 }}>
+                                Page {pagination.page} of {pagination.totalPages} ({pagination.totalRows} total)
+                            </span>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p - 1)} disabled={page === 1}>Previous</button>
+                                <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                    onClick={() => setPage(p => p + 1)} disabled={page === pagination.totalPages}>Next</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <Aside />
-            <Footer />
         </DashboardWrapper>
     );
 }

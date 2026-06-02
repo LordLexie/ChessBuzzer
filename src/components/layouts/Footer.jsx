@@ -1,15 +1,5 @@
-function Footer(){
-    return (
-    <footer className="main-footer">
-
-        <div className="float-right d-none d-sm-inline">
-        Anything you want
-        </div>
-
-        <strong>Powered by </strong> Alexie Digital Studios
-
-    </footer>
-    )
+function Footer() {
+    return null;
 }
 
-export default Footer
+export default Footer;

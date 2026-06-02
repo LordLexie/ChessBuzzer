@@ -1,14 +1,11 @@
 import PropTypes from 'prop-types';
 
 function DashboardWrapper({ children }) {
-
     return (
-        <div className="hold-transition sidebar-mini" >
-        <div className="wrapper">
+        <div className="cb-layout">
             {children}
         </div>
-        </div>
-    )
+    );
 }
 
 DashboardWrapper.propTypes = {
