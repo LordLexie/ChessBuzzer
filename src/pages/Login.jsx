@@ -40,13 +40,13 @@ function Login() {
         if (error?.response?.status === 429 || remaining === '0') {
           setErrorMessage('Too many attempts. Please try again after 15 minutes.');
         } else {
-          setErrorMessage(error?.response?.data?.Data || 'Login failed. Please try again.');
+          setErrorMessage(error?.response?.data?.data || 'Login failed. Please try again.');
         }
       });
   };
 
   return (
-    <div className="cb-auth-page">
+    <div className="cb-auth-page" style={{ flexDirection: 'column' }}>
       <div className="cb-auth-card">
         <div className="cb-auth-brand">
           <div style={{ width: 38, height: 38, borderRadius: 11, background: 'linear-gradient(150deg,#3BE089,#1E8A52)', display: 'grid', placeItems: 'center', fontSize: 22, color: '#06140C', boxShadow: '0 0 22px #3be08955', flexShrink: 0 }}>♞</div>
@@ -95,6 +95,11 @@ function Login() {
           <Link to="/forgot-password" className="cb-auth-link">Forgot password?</Link>
           <Link to="/register" className="cb-auth-link">Create account</Link>
         </div>
+      </div>
+
+      <div style={{ marginTop: 20, display: 'flex', gap: 20, justifyContent: 'center' }}>
+        <Link to="/about" className="cb-auth-link">About Us</Link>
+        <Link to="/rankings" className="cb-auth-link">Leaderboard</Link>
       </div>
     </div>
   );

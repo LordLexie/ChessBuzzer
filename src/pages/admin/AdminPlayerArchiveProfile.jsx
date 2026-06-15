@@ -4,7 +4,6 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
     LineChart, Line,
-    AreaChart, Area,
     XAxis, YAxis, CartesianGrid,
     Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -14,11 +13,6 @@ import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
 import { Icons } from '../../components/ui/Icons';
 
-const analyticsApi = axios.create({
-    baseURL: import.meta.env.VITE_ANALYTICS_API_URL ?? 'http://localhost:8000',
-    headers: { 'X-Service-Key': import.meta.env.VITE_ANALYTICS_SERVICE_KEY ?? '' },
-});
-
 const C_ELO  = '#F2C14E';
 const C_WIN  = '#3BE089';
 const C_LOSS = '#FF6A3D';
@@ -26,22 +20,11 @@ const GRID   = '#243029';
 const TICK   = '#8A9D92';
 const TOOLTIP_STYLE = { background: '#121C18', border: '1px solid #243029', color: '#E8F1EB', borderRadius: 10, fontSize: 13 };
 
-const DAYS = [
-    { key: 'all', label: 'All days' },
-    { key: 'mon', label: 'Mon' }, { key: 'tue', label: 'Tue' },
-    { key: 'wed', label: 'Wed' }, { key: 'thu', label: 'Thu' },
-    { key: 'fri', label: 'Fri' }, { key: 'sat', label: 'Sat' },
-    { key: 'sun', label: 'Sun' },
-];
-
-const TIME_RANGES = [
-    { key: '24h', label: 'Last 24h', days: 1 },
-    { key: '30d', label: 'Last 30 days', days: 30 },
-];
-
-function fmtHour(label) {
-    return label.replace('am', ' AM').replace('pm', ' PM');
-}
+const RESULT_STYLE = {
+    win:  { background: '#0d2b1f', color: '#3BE089', border: '1px solid #1a4a32' },
+    loss: { background: '#2b0d0d', color: '#FF6A3D', border: '1px solid #4a1a1a' },
+    draw: { background: '#1a1a2b', color: '#8A9D92', border: '1px solid #2a2a4a' },
+};
 
 function AdminPlayerArchiveProfile() {
     const { userId } = useParams();
@@ -53,18 +36,18 @@ function AdminPlayerArchiveProfile() {
     const [perfHistory, setPerf] = useState([]);
     const [loading, setLoading]  = useState(true);
 
-    const [timeCache, setTimeCache]     = useState({});
-    const [timeLoading, setTimeLoading] = useState(false);
-    const [timeRange, setTimeRange]     = useState('30d');
-    const [timeDay, setTimeDay]         = useState('all');
+    const [games, setGames]             = useState([]);
+    const [gamesTotal, setGamesTotal]   = useState(0);
+    const [gamesPage, setGamesPage]     = useState(1);
+    const [gamesLoading, setGamesLoading] = useState(false);
 
     useEffect(() => {
         setLoading(true);
-        analyticsApi.get(`/users/${userId}`)
+        axios.get(`/api/v1/admin/analytics/users/${userId}`)
             .then(res => {
                 const u = res.data;
                 setUser(u);
-                return analyticsApi.get(`/analytics/by-username/${u.username}`);
+                return axios.get(`/api/v1/admin/analytics/by-username/${u.username}`);
             })
             .then(r => {
                 const d = r.data;
@@ -86,20 +69,19 @@ function AdminPlayerArchiveProfile() {
     }, [userId]);
 
     useEffect(() => {
-        if (!userId) return;
-        if (timeCache[timeRange]) return;
-        const rangeDef = TIME_RANGES.find(r => r.key === timeRange);
-        setTimeLoading(true);
-        analyticsApi.get(`/time-analytics/player/${userId}?range=${rangeDef.days}`)
-            .then(res => setTimeCache(prev => ({ ...prev, [timeRange]: res.data.data })))
-            .catch(() => {})
-            .finally(() => setTimeLoading(false));
-    }, [timeRange, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (!user) return;
+        setGamesLoading(true);
+        const skip = (gamesPage - 1) * 10;
+        axios.get(`/api/v1/admin/analytics/games?username=${user.username}&skip=${skip}&limit=10`)
+            .then(res => {
+                setGames(res.data.items ?? []);
+                setGamesTotal(res.data.total ?? 0);
+            })
+            .catch(() => toast.error('Failed to load games.'))
+            .finally(() => setGamesLoading(false));
+    }, [user, gamesPage]);
 
-    const timeData   = timeCache[timeRange] ?? null;
-    const hourlyData = timeData ? timeData[timeDay] : null;
-    const peakEntry  = hourlyData ? hourlyData.reduce((a, b) => b.games > a.games ? b : a) : null;
-    const quietEntry = hourlyData ? hourlyData.reduce((a, b) => b.games < a.games ? b : a) : null;
+    const gamesTotalPages = Math.max(1, Math.ceil(gamesTotal / 10));
 
     return (
         <DashboardWrapper>
@@ -193,55 +175,98 @@ function AdminPlayerArchiveProfile() {
                                 </div>
                             </div>
 
-                            {/* Time Distribution */}
+                            {/* Game List */}
                             <div className="cb-card">
                                 <div className="cb-card-head">
-                                    <Icons.clock size={18} />
-                                    <h2>Game Activity — {timeRange === '24h' ? 'Last 24 Hours' : 'Last 30 Days'} (EAT)</h2>
-                                    <span className="cb-hint">
-                                        <div style={{ display: 'flex', gap: 6 }}>
-                                            {TIME_RANGES.map(({ key, label }) => (
-                                                <button key={key} className={`cb-tab ${timeRange === key ? 'active' : ''}`} onClick={() => setTimeRange(key)}>
-                                                    {label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </span>
+                                    <Icons.archive size={18} />
+                                    <h2>Game Archives</h2>
+                                    <span className="cb-count">{gamesTotal} games</span>
                                 </div>
-                                <div className="cb-card-body">
-                                    {peakEntry && (
-                                        <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-                                            <span className="cb-pill gold" style={{ fontSize: 12 }}>Peak: {fmtHour(peakEntry.label)}</span>
-                                            <span className="cb-pill grey" style={{ fontSize: 12 }}>Quiet: {fmtHour(quietEntry.label)}</span>
-                                        </div>
-                                    )}
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 18 }}>
-                                        {DAYS.map(({ key, label }) => (
-                                            <button key={key} className={`cb-tab ${timeDay === key ? 'active' : ''}`} onClick={() => setTimeDay(key)}>
-                                                {label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {(timeLoading || !hourlyData) ? (
+                                <div className="cb-table-wrap">
+                                    {gamesLoading ? (
                                         <div className="cb-center"><div className="cb-spinner" /></div>
                                     ) : (
-                                        <ResponsiveContainer width="100%" height={260}>
-                                            <AreaChart data={hourlyData} margin={{ top: 8, right: 16, left: 0, bottom: 5 }}>
-                                                <defs>
-                                                    <linearGradient id="playerAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%"  stopColor="#3BE089" stopOpacity={0.35} />
-                                                        <stop offset="95%" stopColor="#3BE089" stopOpacity={0.02} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke={GRID} />
-                                                <XAxis dataKey="label" interval={0} tick={{ fill: TICK, fontSize: 9, angle: -45, textAnchor: 'end' }} tickLine={false} axisLine={false} height={50} />
-                                                <YAxis tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} tick={{ fill: TICK, fontSize: 11 }} tickLine={false} axisLine={false} />
-                                                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={v => [v.toLocaleString(), 'Games']} labelFormatter={l => `Hour: ${fmtHour(l)}`} cursor={{ stroke: '#334155', strokeWidth: 1 }} />
-                                                <Area type="monotone" dataKey="games" stroke={C_WIN} strokeWidth={2} fill="url(#playerAreaGrad)" dot={{ fill: C_WIN, r: 2, strokeWidth: 0 }} activeDot={{ r: 4, fill: '#5BE09A', strokeWidth: 0 }} />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
+                                        <table className="cb-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Opponent</th>
+                                                    <th>Color</th>
+                                                    <th>Time Class</th>
+                                                    <th>Result</th>
+                                                    <th>Ratings</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {games.length === 0 ? (
+                                                    <tr><td colSpan={7} className="cb-empty">No games found.</td></tr>
+                                                ) : games.map(g => {
+                                                    const isWhite  = g.white_username?.toLowerCase() === user?.username?.toLowerCase();
+                                                    const opponent = isWhite ? g.black_username : g.white_username;
+                                                    const playerRating   = isWhite ? g.white_rating : g.black_rating;
+                                                    const opponentRating = isWhite ? g.black_rating : g.white_rating;
+                                                    const resultKey = g.player_result === 'win' ? 'win' : g.player_result === 'loss' ? 'loss' : 'draw';
+                                                    return (
+                                                        <tr key={g.id}>
+                                                            <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                                {new Date(g.end_time * 1000).toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: '2-digit' })}
+                                                            </td>
+                                                            <td style={{ fontWeight: 600 }}>{opponent || '—'}</td>
+                                                            <td>
+                                                                <span className={`cb-pill ${isWhite ? 'grey' : 'dark'}`} style={{ fontSize: 11 }}>
+                                                                    {isWhite ? 'White' : 'Black'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="cb-muted" style={{ fontSize: 13, textTransform: 'capitalize' }}>
+                                                                {g.time_class || '—'}
+                                                            </td>
+                                                            <td>
+                                                                <span style={{
+                                                                    ...RESULT_STYLE[resultKey],
+                                                                    fontSize: 11, fontWeight: 700,
+                                                                    padding: '2px 10px', borderRadius: 20,
+                                                                    textTransform: 'capitalize',
+                                                                }}>
+                                                                    {g.player_result}
+                                                                </span>
+                                                            </td>
+                                                            <td className="cb-muted" style={{ fontSize: 13 }}>
+                                                                {playerRating ?? '—'} vs {opponentRating ?? '—'}
+                                                            </td>
+                                                            <td>
+                                                                {g.url && (
+                                                                    <a href={g.url} target="_blank" rel="noreferrer"
+                                                                        style={{ color: '#3BE089', fontSize: 13, textDecoration: 'none' }}
+                                                                        title="View on chess.com">
+                                                                        ↗
+                                                                    </a>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     )}
                                 </div>
+                                {gamesTotalPages > 1 && (
+                                    <div className="cb-card-foot" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span className="cb-muted" style={{ fontSize: 13 }}>
+                                            Page {gamesPage} of {gamesTotalPages}
+                                        </span>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                                onClick={() => setGamesPage(p => p - 1)} disabled={gamesPage === 1}>
+                                                Previous
+                                            </button>
+                                            <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 14px', fontSize: 13 }}
+                                                onClick={() => setGamesPage(p => p + 1)} disabled={gamesPage === gamesTotalPages}>
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

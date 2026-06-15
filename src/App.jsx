@@ -10,6 +10,7 @@ import AdminLogin from './pages/admin/AdminLogin.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import AdminTransactions from './pages/admin/AdminTransactions.jsx'
 import AdminPlayers from './pages/admin/AdminPlayers.jsx'
+import AdminPlayerDetail from './pages/admin/AdminPlayerDetail.jsx'
 import AdminWallets from './pages/admin/AdminWallets.jsx'
 import AdminCentralWallets from './pages/admin/AdminCentralWallets.jsx'
 import AdminCentralWalletDetail from './pages/admin/AdminCentralWalletDetail.jsx'
@@ -20,6 +21,11 @@ import AdminPlayerArchiveProfile from './pages/admin/AdminPlayerArchiveProfile.j
 import AdminMarketingTargets from './pages/admin/AdminMarketingTargets.jsx'
 import AdminTimeAnalytics from './pages/admin/AdminTimeAnalytics.jsx'
 import AdminSettings from './pages/admin/AdminSettings.jsx'
+import AdminTournaments from './pages/admin/AdminTournaments.jsx'
+import AdminTournamentDetail from './pages/admin/AdminTournamentDetail.jsx'
+import AdminPayouts from './pages/admin/AdminPayouts.jsx'
+import AboutUs from './pages/AboutUs.jsx'
+import PublicLeaderboard from './pages/PublicLeaderboard.jsx'
 import PlayerDashboard from './pages/PlayerDashboard.jsx'
 import PlayerTransactions from './pages/PlayerTransactions.jsx'
 import PlayerProfile from './pages/PlayerProfile.jsx'
@@ -70,11 +76,14 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/rankings" element={<PublicLeaderboard />} />
         <Route path="/admin" element={<AdminLogin />} />
 
         <Route element={<AdminPrivateRoutes />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/players" element={<AdminPlayers />} />
+          <Route path="/admin/players/:userId" element={<AdminPlayerDetail />} />
           <Route path="/admin/transactions" element={<AdminTransactions />} />
           <Route path="/admin/wallets" element={<AdminWallets />} />
           <Route path="/admin/central-wallets" element={<AdminCentralWallets />} />
@@ -86,6 +95,9 @@ function App() {
           <Route path="/admin/marketing" element={<AdminMarketingTargets />} />
           <Route path="/admin/time-analytics" element={<AdminTimeAnalytics />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/tournaments" element={<AdminTournaments />} />
+          <Route path="/admin/tournaments/:tournamentId" element={<AdminTournamentDetail />} />
+          <Route path="/admin/payouts" element={<AdminPayouts />} />
         </Route>
 
         <Route element={<PrivateRoutes />} >

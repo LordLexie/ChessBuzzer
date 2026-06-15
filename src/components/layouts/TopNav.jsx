@@ -5,7 +5,6 @@ import useAuth from '../../hooks/useAuth';
 import { useSidebar } from '../../context/SidebarContext';
 import { Icons } from '../ui/Icons';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8888';
 
 function TopNav({ title, subtitle }) {
     const navigate = useNavigate();
@@ -65,7 +64,7 @@ function TopNav({ title, subtitle }) {
     const handleResend = async () => {
         setResendStatus('sending');
         try {
-            await axios.post(`${API_BASE}/api/v1/auth/resend-verification`, { Email: userInfo.email });
+            await axios.post('api/v1/auth/resend-verification', { Email: userInfo.email });
             setResendStatus('sent');
         } catch {
             setResendStatus('error');

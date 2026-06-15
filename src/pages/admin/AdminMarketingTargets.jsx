@@ -8,11 +8,6 @@ import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
 import { Icons } from '../../components/ui/Icons';
 
-const analyticsApi = axios.create({
-    baseURL: import.meta.env.VITE_ANALYTICS_API_URL ?? 'http://localhost:8000',
-    headers: { 'X-Service-Key': import.meta.env.VITE_ANALYTICS_SERVICE_KEY ?? '' },
-});
-
 function TopPlayersTab() {
     const navigate = useNavigate();
     const [items, setItems]           = useState([]);
@@ -22,7 +17,7 @@ function TopPlayersTab() {
 
     const fetch = () => {
         setLoading(true);
-        analyticsApi.get(`/marketing/targets?min_games=${minGames}&active_days=${activeDays}&limit=50`)
+        axios.get(`/api/v1/admin/analytics/marketing/targets?min_games=${minGames}&active_days=${activeDays}&limit=50`)
             .then(res => setItems(res.data.items ?? []))
             .catch(() => toast.error('Failed to load marketing targets.'))
             .finally(() => setLoading(false));
@@ -117,7 +112,7 @@ function MatchupsTab() {
 
     const fetch = () => {
         setLoading(true);
-        analyticsApi.get(`/marketing/matchups?rating_spread=${ratingSpread}&min_games=${minGames}&active_days=${activeDays}&limit=30`)
+        axios.get(`/api/v1/admin/analytics/marketing/matchups?rating_spread=${ratingSpread}&min_games=${minGames}&active_days=${activeDays}&limit=30`)
             .then(res => setItems(res.data.items ?? []))
             .catch(() => toast.error('Failed to load matchup suggestions.'))
             .finally(() => setLoading(false));

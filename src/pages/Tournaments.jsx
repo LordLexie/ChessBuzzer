@@ -76,6 +76,7 @@ function Tournaments() {
     const navigate = useNavigate();
     const [tournaments, setTournaments] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [canCreateTournament, setCanCreateTournament] = useState(false);
 
     const fetchTournaments = () => {
         setLoading(true);
@@ -86,6 +87,14 @@ function Tournaments() {
     };
 
     useEffect(() => { fetchTournaments(); }, []);
+
+    useEffect(() => {
+        if (auth.user_id) {
+            axios.get(`/api/v1/user/${auth.user_id}`)
+                .then(res => setCanCreateTournament(res.data?.data?.create_tournament === true))
+                .catch(() => {});
+        }
+    }, [auth.user_id]);
 
     const isOrganizer = t => String(t.organizer_id) === String(auth.user_id);
 
@@ -109,12 +118,14 @@ function Tournaments() {
                             <Icons.grid size={20} />
                             <h2>Tournaments</h2>
                             <span className="cb-count">{visibleTournaments.length}</span>
-                            <span className="cb-hint">
-                                <button className="cb-btn cb-btn-primary" style={{ padding: '7px 14px', fontSize: 13 }}
-                                    onClick={() => navigate('/tournaments/new')}>
-                                    + New Tournament
-                                </button>
-                            </span>
+                            {canCreateTournament && (
+                                <span className="cb-hint">
+                                    <button className="cb-btn cb-btn-primary" style={{ padding: '7px 14px', fontSize: 13 }}
+                                        onClick={() => navigate('/tournaments/new')}>
+                                        + New Tournament
+                                    </button>
+                                </span>
+                            )}
                         </div>
 
                         <div className="cb-table-wrap">

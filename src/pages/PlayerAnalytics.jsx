@@ -14,8 +14,9 @@ import {
 const C_WIN   = '#3BE089';
 const C_LOSS  = '#FF6A3D';
 const C_DRAW  = '#8A9D92';
-const C_ELO   = '#F2C14E';
-const C_BLITZ = '#5BB4F8';
+const C_ELO    = '#F2C14E';
+const C_BLITZ  = '#5BB4F8';
+const C_BULLET = '#FF6A3D';
 const GRID    = '#243029';
 const TICK    = '#8A9D92';
 
@@ -169,7 +170,7 @@ function PlayerAnalytics() {
                 <div className="cb-body">
 
                     {/* KPI row */}
-                    <div className="cb-stats" style={{ gridTemplateColumns: 'repeat(4,1fr)' }}>
+                    <div className="cb-stats">
                         <StatCard color="blue"  label="Total Games" value={kpi?.totalGames} icon={<Icons.grid size={20} />} />
                         <StatCard color="green" label="Wins"        value={kpi?.totalWins} />
                         <StatCard color="coral" label="Losses"      value={kpi?.totalLosses} />
@@ -177,13 +178,20 @@ function PlayerAnalytics() {
                     </div>
 
                     {/* Charts row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 26 }}>
+                    <div className="cb-grid-analytics">
                         {/* Left column */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
 
                             {/* ELO History */}
                             <div className="cb-card">
-                                <div className="cb-card-head"><Icons.chart size={20} /><h2>ELO Rating History</h2></div>
+                                <div className="cb-card-head">
+                                    <Icons.chart size={20} /><h2>ELO Rating History</h2>
+                                    <div style={{ display: 'flex', gap: 10, marginLeft: 'auto', fontSize: 12 }}>
+                                        {kpi?.currentRating?.blitz  && <span style={{ color: C_BLITZ }}>Blitz {kpi.currentRating.blitz}</span>}
+                                        {kpi?.currentRating?.rapid  && <span style={{ color: C_ELO }}>Rapid {kpi.currentRating.rapid}</span>}
+                                        {kpi?.currentRating?.bullet && <span style={{ color: C_BULLET }}>Bullet {kpi.currentRating.bullet}</span>}
+                                    </div>
+                                </div>
                                 <div className="cb-card-body">
                                     <ResponsiveContainer width="100%" height={220}>
                                         <LineChart data={eloHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -191,7 +199,10 @@ function PlayerAnalytics() {
                                             {chartProps.xAxis('month')}
                                             {chartProps.yAxis}
                                             {chartProps.tooltip}
-                                            <Line type="monotone" dataKey="rating" stroke={C_ELO} strokeWidth={2} dot={{ r: 3 }} name="Rating" />
+                                            <Legend wrapperStyle={{ color: TICK, fontSize: 13 }} />
+                                            <Line type="monotone" dataKey="blitz"  stroke={C_BLITZ}  strokeWidth={2} dot={false} name="Blitz"  connectNulls />
+                                            <Line type="monotone" dataKey="rapid"  stroke={C_ELO}    strokeWidth={2} dot={false} name="Rapid"  connectNulls />
+                                            <Line type="monotone" dataKey="bullet" stroke={C_BULLET} strokeWidth={2} dot={false} name="Bullet" connectNulls />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>

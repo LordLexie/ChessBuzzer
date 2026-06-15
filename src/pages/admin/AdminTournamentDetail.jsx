@@ -2,13 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import Swal from 'sweetalert2';
-import useAuth from '../hooks/useAuth';
 
-import DashboardWrapper from '../components/layouts/DashboardWrapper';
-import TopNav from '../components/layouts/TopNav';
-import Sidebar from '../components/layouts/Sidebar';
-import { Icons, CHESS } from '../components/ui/Icons';
+import DashboardWrapper from '../../components/layouts/DashboardWrapper';
+import AdminTopNav from '../../components/layouts/AdminTopNav';
+import AdminSidebar from '../../components/layouts/AdminSidebar';
+import { Icons, CHESS } from '../../components/ui/Icons';
 
 const STATUS_PILL = {
     draft:               'grey',
@@ -39,86 +37,30 @@ function ParticipantPill({ status }) {
 
 const medalLabel = pos => pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : `#${pos}`;
 
-function TournamentOrganizerView() {
+function AdminTournamentDetail() {
     const { tournamentId } = useParams();
-    const { auth } = useAuth();
     const navigate = useNavigate();
     const [tournament, setTournament] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [edits, setEdits] = useState({});
-    const [saving, setSaving] = useState({});
     const [prizes, setPrizes] = useState([]);
-    const [disbursing, setDisbursing] = useState(false);
 
     useEffect(() => {
-        axios.get(`/api/v1/tournament/${tournamentId}`)
+        axios.get(`/api/v1/admin/tournaments/${tournamentId}`)
             .then(res => {
                 const t = res.data?.data ?? null;
-                if (t && String(t.organizer_id) !== String(auth.user_id)) {
-                    navigate(`/tournaments/${tournamentId}`, { replace: true });
-                    return;
-                }
                 setTournament(t);
-                if (t) {
-                    const initial = {};
-                    (t.participants ?? []).forEach(p => {
-                        initial[p.ID] = { rank: p.rank, score: p.score };
-                    });
-                    setEdits(initial);
-                    if (t.status === 'completed' && t.prize_type === 'fixed') {
-                        axios.get(`/api/v1/tournament/${tournamentId}/prizes`)
-                            .then(res => setPrizes(res.data?.data ?? []))
-                            .catch(() => {});
-                    }
+                if (t?.status === 'completed' && t?.prize_type === 'fixed') {
+                    axios.get(`/api/v1/tournament/${tournamentId}/prizes`)
+                        .catch(() => {});
                 }
             })
             .catch(() => toast.error('Failed to load tournament'))
             .finally(() => setLoading(false));
     }, [tournamentId]);
 
-    const handleSave = async (p) => {
-        setSaving(s => ({ ...s, [p.ID]: true }));
-        try {
-            await axios.patch(`/api/v1/tournament-participant/${p.ID}`, {
-                ID: p.ID,
-                Rank: edits[p.ID]?.rank ?? p.rank,
-                Score: edits[p.ID]?.score ?? p.score,
-            });
-            toast.success(`Saved rank for ${p.user?.username ?? 'participant'}`);
-        } catch (err) {
-            toast.error(err.response?.data?.data ?? 'Failed to save');
-        } finally {
-            setSaving(s => ({ ...s, [p.ID]: false }));
-        }
-    };
-
-    const handleDisburseAll = async () => {
-        const result = await Swal.fire({
-            title: 'Disburse Prizes?',
-            text: 'Winners will be paid and a platform fee deducted. This cannot be undone.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3BE089',
-            cancelButtonColor: '#243029',
-            confirmButtonText: 'Yes, disburse',
-            background: '#121C18',
-            color: '#E8F1EB',
-        });
-        if (!result.isConfirmed) return;
-        setDisbursing(true);
-        try {
-            await axios.post(`/api/v1/tournament/${tournamentId}/disburse`);
-            toast.success('Prizes disbursed successfully');
-            const res = await axios.get(`/api/v1/tournament/${tournamentId}`);
-            setTournament(res.data?.data ?? tournament);
-        } catch (err) {
-            toast.error(err.response?.data?.data ?? 'Disbursement failed');
-        } finally {
-            setDisbursing(false);
-        }
-    };
-
-    const canEditRanks = tournament?.status === 'completed';
+    const fmt = date => date
+        ? new Date(date).toLocaleString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : '—';
 
     const disbursementRows = () => {
         if (!tournament) return [];
@@ -126,28 +68,25 @@ function TournamentOrganizerView() {
             return [{ position: 1, percentage: 100, amount: tournament.prize_pool }];
         }
         return prizes.map(p => ({
-            id: p.ID,
             position: p.position,
             percentage: p.percentage,
-            amount: ((p.percentage / 100) * tournament.prize_pool),
+            amount: (p.percentage / 100) * tournament.prize_pool,
         }));
     };
-
-    const fmt = date => date
-        ? new Date(date).toLocaleString('en-KE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-        : '—';
 
     const t = tournament;
 
     return (
         <DashboardWrapper>
-            <Sidebar />
+            <AdminSidebar />
             <div className="cb-main">
-                <TopNav />
+                <AdminTopNav />
                 <div className="cb-body">
                     {loading ? (
                         <div className="cb-center"><div className="cb-spinner" /></div>
-                    ) : !t ? null : (
+                    ) : !t ? (
+                        <div className="cb-empty">Tournament not found.</div>
+                    ) : (
                         <>
                             {/* Page header */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
@@ -156,16 +95,12 @@ function TournamentOrganizerView() {
                                     {t.name}
                                 </h1>
                                 <button className="cb-btn cb-btn-ghost" style={{ fontSize: 13, padding: '7px 14px' }}
-                                    onClick={() => navigate('/tournaments')}>
+                                    onClick={() => navigate('/admin/tournaments')}>
                                     <Icons.back size={15} /> Back
-                                </button>
-                                <button className="cb-btn cb-btn-ghost" style={{ fontSize: 13, padding: '7px 14px' }}
-                                    onClick={() => navigate(`/tournaments/${tournamentId}/edit`)}>
-                                    <Icons.edit size={15} /> Edit
                                 </button>
                             </div>
 
-                            {/* Details card — includes stat cards + kv rows */}
+                            {/* Details card with stat cards */}
                             <div className="cb-card">
                                 <div className="cb-card-head">
                                     <Icons.grid size={18} />
@@ -221,6 +156,10 @@ function TournamentOrganizerView() {
                                             <div className="v">{fmt(t.start_date)}</div>
                                         </div>
                                         <div className="cb-kv">
+                                            <div className="k"><Icons.crown size={14} /> Organizer</div>
+                                            <div className="v">{t.organizer?.username ?? '—'}</div>
+                                        </div>
+                                        <div className="cb-kv">
                                             <div className="k"><Icons.trophy size={14} /> Prize Type</div>
                                             <div className="v" style={{ textTransform: 'capitalize' }}>{t.prize_type?.replace(/_/g, ' ') || '—'}</div>
                                         </div>
@@ -256,9 +195,6 @@ function TournamentOrganizerView() {
                                     <Icons.users size={18} />
                                     <h2>Participants</h2>
                                     <span className="cb-count">{t.participants?.length ?? 0}</span>
-                                    {canEditRanks && (
-                                        <span className="cb-hint" style={{ fontSize: 12, color: '#8A9D92' }}>Edit ranks and scores, then save each row</span>
-                                    )}
                                 </div>
                                 <div className="cb-table-wrap">
                                     {(!t.participants || t.participants.length === 0) ? (
@@ -272,7 +208,6 @@ function TournamentOrganizerView() {
                                                     <th>Status</th>
                                                     <th>Rank</th>
                                                     <th>Score</th>
-                                                    {canEditRanks && <th></th>}
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -281,52 +216,8 @@ function TournamentOrganizerView() {
                                                         <td className="cb-muted">{i + 1}</td>
                                                         <td style={{ fontWeight: 700 }}>{p.user?.username ?? '—'}</td>
                                                         <td><ParticipantPill status={p.status} /></td>
-                                                        <td>
-                                                            {canEditRanks ? (
-                                                                <input
-                                                                    type="number"
-                                                                    className="cb-input"
-                                                                    style={{ width: 80, padding: '6px 10px' }}
-                                                                    value={edits[p.ID]?.rank ?? p.rank ?? ''}
-                                                                    onChange={e => setEdits(s => ({
-                                                                        ...s,
-                                                                        [p.ID]: { ...s[p.ID], rank: parseInt(e.target.value) || 0 },
-                                                                    }))}
-                                                                />
-                                                            ) : (
-                                                                <span className="cb-muted">{p.rank ?? '—'}</span>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            {canEditRanks ? (
-                                                                <input
-                                                                    type="number"
-                                                                    step="0.01"
-                                                                    className="cb-input"
-                                                                    style={{ width: 90, padding: '6px 10px' }}
-                                                                    value={edits[p.ID]?.score ?? p.score ?? ''}
-                                                                    onChange={e => setEdits(s => ({
-                                                                        ...s,
-                                                                        [p.ID]: { ...s[p.ID], score: parseFloat(e.target.value) || 0 },
-                                                                    }))}
-                                                                />
-                                                            ) : (
-                                                                <span className="cb-muted">{p.score ?? '—'}</span>
-                                                            )}
-                                                        </td>
-                                                        {canEditRanks && (
-                                                            <td>
-                                                                <button
-                                                                    className="cb-btn cb-btn-ghost"
-                                                                    style={{ padding: '5px 14px', fontSize: 13 }}
-                                                                    onClick={() => handleSave(p)}
-                                                                    disabled={saving[p.ID]}
-                                                                >
-                                                                    {saving[p.ID] ? <span className="cb-spinner sm" /> : <Icons.check size={14} />}
-                                                                    Save
-                                                                </button>
-                                                            </td>
-                                                        )}
+                                                        <td className="cb-muted">{p.rank ?? '—'}</td>
+                                                        <td className="cb-muted">{p.score ?? '—'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -335,63 +226,47 @@ function TournamentOrganizerView() {
                                 </div>
                             </div>
 
-                            {/* Prize Disbursement card — only when completed */}
-                            {canEditRanks && (
+                            {/* Prize breakdown — visible when completed or disbursed */}
+                            {(t.status === 'completed' || t.status === 'disbursed') && disbursementRows().length > 0 && (
                                 <div className="cb-card">
                                     <div className="cb-card-head">
                                         <Icons.trophy size={18} />
-                                        <h2>Prize Disbursement</h2>
+                                        <h2>Prize Breakdown</h2>
                                         {t.disbursed_at && (
                                             <span className="cb-pill green" style={{ marginLeft: 'auto' }}>
-                                                <span className="dot" /> All Prizes Disbursed
+                                                <span className="dot" /> Disbursed
                                             </span>
                                         )}
                                     </div>
                                     <div className="cb-table-wrap">
-                                        {disbursementRows().length === 0 ? (
-                                            <div className="cb-empty">No prize tiers configured.</div>
-                                        ) : (
-                                            <table className="cb-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Position</th>
-                                                        <th>Winner</th>
-                                                        <th>Prize Amount</th>
-                                                        <th>% of Pool</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {disbursementRows().map(row => {
-                                                        const winner = t.participants?.find(par => par.rank === row.position);
-                                                        return (
-                                                            <tr key={row.position}>
-                                                                <td style={{ fontWeight: 700, color: '#F2C14E' }}>{medalLabel(row.position)}</td>
-                                                                <td style={{ fontWeight: 700 }}>{winner?.user?.username ?? <span className="cb-muted">—</span>}</td>
-                                                                <td>
-                                                                    <span className="cb-mono green" style={{ fontSize: 15 }}>
-                                                                        {t.currency?.symbol} {row.amount.toFixed(2)}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="cb-muted">{row.percentage}%</td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        )}
+                                        <table className="cb-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Position</th>
+                                                    <th>Winner</th>
+                                                    <th>Prize Amount</th>
+                                                    <th>% of Pool</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {disbursementRows().map(row => {
+                                                    const winner = t.participants?.find(p => p.rank === row.position);
+                                                    return (
+                                                        <tr key={row.position}>
+                                                            <td style={{ fontWeight: 700, color: '#F2C14E' }}>{medalLabel(row.position)}</td>
+                                                            <td style={{ fontWeight: 700 }}>{winner?.user?.username ?? <span className="cb-muted">—</span>}</td>
+                                                            <td>
+                                                                <span className="cb-mono green" style={{ fontSize: 15 }}>
+                                                                    {t.currency?.symbol} {row.amount.toFixed(2)}
+                                                                </span>
+                                                            </td>
+                                                            <td className="cb-muted">{row.percentage}%</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    {disbursementRows().length > 0 && !t.disbursed_at && (
-                                        <div className="cb-card-foot" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                            <button
-                                                className="cb-btn cb-btn-primary"
-                                                onClick={handleDisburseAll}
-                                                disabled={disbursing}
-                                            >
-                                                {disbursing ? <span className="cb-spinner sm" /> : <Icons.send size={16} />}
-                                                Disburse All
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             )}
                         </>
@@ -402,4 +277,4 @@ function TournamentOrganizerView() {
     );
 }
 
-export default TournamentOrganizerView;
+export default AdminTournamentDetail;

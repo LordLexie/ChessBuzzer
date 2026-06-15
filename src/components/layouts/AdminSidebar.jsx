@@ -11,6 +11,8 @@ const ADMIN_NAV = [
     { id: 'analytics',   label: 'Time Analytics',  icon: 'clock',    to: '/admin/time-analytics' },
     { id: 'transactions',label: 'Transactions',    icon: 'swap',     to: '/admin/transactions' },
     { id: 'challenges',  label: 'Challenges',      icon: 'grid',     to: '/admin/challenges' },
+    { id: 'tournaments', label: 'Tournaments',      icon: 'crown',    to: '/admin/tournaments' },
+    { id: 'payouts',     label: 'Payouts',          icon: 'swap',     to: '/admin/payouts' },
     { id: 'wallets',     label: 'Player Wallets',  icon: 'wallet',   to: '/admin/wallets' },
     { id: 'cwallets',    label: 'Central Wallets', icon: 'coins',    to: '/admin/central-wallets' },
     { id: 'settings',    label: 'Settings',        icon: 'settings', to: '/admin/settings' },

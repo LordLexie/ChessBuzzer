@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 import DashboardWrapper from '../../components/layouts/DashboardWrapper';
@@ -7,6 +8,7 @@ import AdminSidebar from '../../components/layouts/AdminSidebar';
 import { Icons } from '../../components/ui/Icons';
 
 function AdminPlayers() {
+    const navigate = useNavigate();
     const [players, setPlayers] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, totalRows: 0 });
     const [page, setPage] = useState(1);
@@ -47,6 +49,7 @@ function AdminPlayers() {
                                     <thead>
                                         <tr>
                                             <th>#</th>
+                                            <th style={{ width: 40 }}></th>
                                             <th>Username</th>
                                             <th>Name</th>
                                             <th>Email</th>
@@ -57,18 +60,16 @@ function AdminPlayers() {
                                     </thead>
                                     <tbody>
                                         {players.length === 0 ? (
-                                            <tr><td colSpan={7} className="cb-empty">No players found.</td></tr>
+                                            <tr><td colSpan={8} className="cb-empty">No players found.</td></tr>
                                         ) : players.map((player, index) => (
-                                            <tr key={player.ID}>
+                                            <tr key={player.ID} style={{ cursor: 'pointer' }} onClick={() => navigate(`/admin/players/${player.ID}`)}>
                                                 <td className="cb-muted">{(pagination.page - 1) * 10 + index + 1}</td>
                                                 <td>
-                                                    <div className="cb-user">
-                                                        <div className="cb-user-av" style={{ background: 'linear-gradient(150deg,#3BE089,#1E8A52)' }}>
-                                                            {player.username?.[0]?.toUpperCase() ?? '?'}
-                                                        </div>
-                                                        <span style={{ fontWeight: 700 }}>{player.username}</span>
+                                                    <div className="cb-user-av" style={{ background: 'linear-gradient(150deg,#3BE089,#1E8A52)' }}>
+                                                        {player.username?.[0]?.toUpperCase() ?? '?'}
                                                     </div>
                                                 </td>
+                                                <td><span style={{ fontWeight: 700 }}>{player.username}</span></td>
                                                 <td className="cb-muted">{player.name || '—'}</td>
                                                 <td className="cb-muted" style={{ fontSize: 13 }}>{player.email}</td>
                                                 <td className="cb-muted">{player.country || '—'}</td>

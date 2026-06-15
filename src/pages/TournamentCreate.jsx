@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -30,6 +30,19 @@ function TournamentCreate() {
     const navigate = useNavigate();
     const [form, setForm] = useState({ ...EMPTY_FORM, OrganizerId: auth.user_id });
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (auth.user_id) {
+            axios.get(`/api/v1/user/${auth.user_id}`)
+                .then(res => {
+                    if (!res.data?.data?.create_tournament) {
+                        toast.error('You do not have permission to create tournaments');
+                        navigate('/tournaments');
+                    }
+                })
+                .catch(() => navigate('/tournaments'));
+        }
+    }, [auth.user_id]);
 
     const handleChange = e => {
         const { name, value } = e.target;

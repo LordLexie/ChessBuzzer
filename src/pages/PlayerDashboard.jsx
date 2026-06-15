@@ -81,7 +81,7 @@ function PlayerDashboard() {
     const [challengeTypes, setChallengeTypes] = useState([]);
     const [challengeModal, setChallengeModal] = useState(false);
     const [gameSettleModal, setGameSettleModal] = useState(false);
-    const [challengeMode, setChallengeMode] = useState('specific');
+    const [challengeMode, setChallengeMode] = useState('open');
     const [seriesLength, setSeriesLength] = useState(1);
     const [challengeFilter, setChallengeFilter] = useState('all');
     const [claimPayload, setClaimPayload] = useState({ GameType: '', ChallengeID: '' });
@@ -94,6 +94,8 @@ function PlayerDashboard() {
     const [depositVariables, setDepositVariables] = useState({ phoneNumber: '', amount: 1, projectCode: '', transactionId: '', userId: parseInt(userId) });
     const [withdrawVariables, setWithdrawVariables] = useState({ phone: '', amount: 1, user_id: parseInt(userId), wallet_id: 0 });
     const [inputErrors, setInputErrors] = useState({ opponent: '', game_type: '', currency: '', amount: '' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const PAGE_SIZE = 10;
 
     const handleGameInput = (e) => setGameVariables(prev => ({ ...prev, [e.target.name]: e.target.value }));
     const handleDepositInput = (e) => setDepositVariables(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -134,13 +136,21 @@ function PlayerDashboard() {
     const fetchWallets = () => {
         setWalletsLoading(true);
         axios.get(`api/v1/player-wallet/user/${userId}`)
-            .then(res => { if (res.data.status === 'Ok') setWallets(res.data.data ?? []); })
+            .then(res => {
+                if (res.data.status === 'Ok') {
+                    const wallets = res.data.data ?? [];
+                    setWallets(wallets);
+                    if (wallets.length > 0) {
+                        setGameVariables(prev => ({ ...prev, currency: prev.currency || wallets[0].currency }));
+                    }
+                }
+            })
             .finally(() => setWalletsLoading(false));
     };
 
     const fetchGameTypes = () => {
         axios.get('api/v1/challenge-type').then(res => {
-            if (res.data.status === 'Ok') setChallengeTypes(res.data.data);
+            if (res.data.status === 'Ok') setChallengeTypes(res.data.data ?? []);
         });
     };
 
@@ -243,7 +253,7 @@ function PlayerDashboard() {
             };
             axios.post('api/v1/challenge/open', data)
                 .then(res => {
-                    if (res.data.status === 'Ok') { fetchChallenges(); fetchWallets(); closeChallengeModal(); setGameVariables({ challenge_type_code: '', currency: '', fees: 0 }); toast.success('Open challenge posted!'); }
+                    if (res.data.status === 'Ok') { fetchChallenges(); fetchWallets(); closeChallengeModal(); setGameVariables({ challenge_type_code: '', currency: userWallets[0]?.currency || '', fees: 0 }); toast.success('Open challenge posted!'); }
                     else toast.error(res.data.data || 'Failed');
                 })
                 .catch(err => toast.error(err.response?.data?.Data || 'Failed to post challenge.'));
@@ -260,7 +270,7 @@ function PlayerDashboard() {
             };
             axios.post('api/v1/challenge', data)
                 .then(res => {
-                    if (res.data.status === 'Ok') { fetchChallenges(); fetchWallets(); closeChallengeModal(); setGameVariables({ challenge_type_code: '', currency: '', fees: 0 }); toast.success('Challenge created!'); }
+                    if (res.data.status === 'Ok') { fetchChallenges(); fetchWallets(); closeChallengeModal(); setGameVariables({ challenge_type_code: '', currency: userWallets[0]?.currency || '', fees: 0 }); toast.success('Challenge created!'); }
                     else toast.error(res.data.data || 'Failed');
                 })
                 .catch(err => toast.error(err.response?.data?.Data || 'Failed to create challenge.'));
@@ -293,6 +303,8 @@ function PlayerDashboard() {
     const filteredChallenges = challengeFilter === 'all'
         ? (userChallenges ?? [])
         : (userChallenges?.filter(c => c.Status === challengeFilter) ?? []);
+    const totalPages = Math.ceil(filteredChallenges.length / PAGE_SIZE);
+    const paginatedChallenges = filteredChallenges.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
     const filterCounts = STATUS_FILTERS.reduce((acc, f) => {
         acc[f] = f === 'all' ? (userChallenges?.length ?? 0) : (userChallenges?.filter(c => c.Status === f).length ?? 0);
         return acc;
@@ -385,7 +397,7 @@ function PlayerDashboard() {
                             {STATUS_FILTERS.map(f => (
                                 <button key={f}
                                     className={`cb-tab ${challengeFilter === f ? 'active' : ''}`}
-                                    onClick={() => setChallengeFilter(f)}>
+                                    onClick={() => { setChallengeFilter(f); setCurrentPage(1); }}>
                                     {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
                                     {filterCounts[f] > 0 && <span className="cb-count">{filterCounts[f]}</span>}
                                 </button>
@@ -405,7 +417,7 @@ function PlayerDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredChallenges.map((ch, i) => (
+                                    {paginatedChallenges.map((ch, i) => (
                                         <tr key={i} className="cb-challenge-row" style={{ '--rail': RAIL_COLORS[ch.Status] }}>
                                             <td className="cb-muted">{i + 1}</td>
                                             <td className="cb-muted" style={{ fontSize: 13 }}>{FormatTime(ch.CreatedAt)}</td>
@@ -461,11 +473,33 @@ function PlayerDashboard() {
                                             </td>
                                         </tr>
                                     ))}
-                                    {filteredChallenges.length === 0 && (
+                                    {paginatedChallenges.length === 0 && (
                                         <tr><td colSpan={6} className="cb-empty">No challenges found.</td></tr>
                                     )}
                                 </tbody>
                             </table>
+                            {totalPages > 1 && (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 4px 4px' }}>
+                                    <span className="cb-muted" style={{ fontSize: 13 }}>
+                                        {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredChallenges.length)} of {filteredChallenges.length}
+                                    </span>
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                        <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 12px', fontSize: 12 }}
+                                            disabled={currentPage === 1}
+                                            onClick={() => setCurrentPage(p => p - 1)}>
+                                            ← Prev
+                                        </button>
+                                        <span style={{ padding: '5px 10px', fontSize: 12, color: '#8A9D92' }}>
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <button className="cb-btn cb-btn-ghost" style={{ padding: '5px 12px', fontSize: 12 }}
+                                            disabled={currentPage === totalPages}
+                                            onClick={() => setCurrentPage(p => p + 1)}>
+                                            Next →
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -479,16 +513,16 @@ function PlayerDashboard() {
                 <Modal.Body>
                     <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                         <button type="button"
-                            className={`cb-btn ${challengeMode === 'specific' ? 'cb-btn-primary' : 'cb-btn-ghost'}`}
-                            style={{ flex: 1, justifyContent: 'center' }}
-                            onClick={() => setChallengeMode('specific')}>
-                            <Icons.user size={15} /> Challenge a specific player
-                        </button>
-                        <button type="button"
                             className={`cb-btn ${challengeMode === 'open' ? 'cb-btn-primary' : 'cb-btn-ghost'}`}
                             style={{ flex: 1, justifyContent: 'center' }}
                             onClick={() => setChallengeMode('open')}>
                             <Icons.globe size={15} /> Post open challenge
+                        </button>
+                        <button type="button"
+                            className={`cb-btn ${challengeMode === 'specific' ? 'cb-btn-primary' : 'cb-btn-ghost'}`}
+                            style={{ flex: 1, justifyContent: 'center' }}
+                            onClick={() => setChallengeMode('specific')}>
+                            <Icons.user size={15} /> Challenge a specific player
                         </button>
                     </div>
 

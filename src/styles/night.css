@@ -1100,6 +1100,8 @@ body {
 /* ── Page grid ────────────────────────────────────────────── */
 .cb-grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 26px; }
 @media (max-width: 900px) { .cb-grid-2 { grid-template-columns: 1fr; } }
+.cb-grid-analytics { display: grid; grid-template-columns: 2fr 1fr; gap: 26px; }
+@media (max-width: 900px) { .cb-grid-analytics { grid-template-columns: 1fr; } }
 
 /* ── Chart card overrides ─────────────────────────────────── */
 .recharts-text { fill: #8A9D92 !important; }

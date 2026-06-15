@@ -12,11 +12,6 @@ import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
 import { Icons } from '../../components/ui/Icons';
 
-const analyticsApi = axios.create({
-    baseURL: import.meta.env.VITE_ANALYTICS_API_URL ?? 'http://localhost:8000',
-    headers: { 'X-Service-Key': import.meta.env.VITE_ANALYTICS_SERVICE_KEY ?? '' },
-});
-
 const DAYS = [
     { key: 'all', label: 'All days' },
     { key: 'mon', label: 'Mon' }, { key: 'tue', label: 'Tue' },
@@ -54,7 +49,7 @@ function AdminTimeAnalytics() {
         if (cache[days]) return;
 
         setLoading(true);
-        analyticsApi.get(`/time-analytics?range=${days}`)
+        axios.get(`/api/v1/admin/analytics/time?range=${days}`)
             .then(res => setCache(prev => ({ ...prev, [days]: res.data.data })))
             .catch(() => toast.error('Failed to load time analytics.'))
             .finally(() => setLoading(false));

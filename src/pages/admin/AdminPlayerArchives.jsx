@@ -8,11 +8,6 @@ import AdminTopNav from '../../components/layouts/AdminTopNav';
 import AdminSidebar from '../../components/layouts/AdminSidebar';
 import { Icons } from '../../components/ui/Icons';
 
-const analyticsApi = axios.create({
-    baseURL: import.meta.env.VITE_ANALYTICS_API_URL ?? 'http://localhost:8000',
-    headers: { 'X-Service-Key': import.meta.env.VITE_ANALYTICS_SERVICE_KEY ?? '' },
-});
-
 const PAGE_SIZE = 10;
 
 function AdminPlayerArchives() {
@@ -32,11 +27,11 @@ function AdminPlayerArchives() {
     useEffect(() => {
         setLoading(true);
         const skip = (page - 1) * PAGE_SIZE;
-        let url = `/users/?skip=${skip}&limit=${PAGE_SIZE}`;
+        let url = `/api/v1/admin/analytics/users?skip=${skip}&limit=${PAGE_SIZE}`;
         if (appliedFilters.activeDays) url += `&active_days=${appliedFilters.activeDays}`;
         if (appliedFilters.minGames)   url += `&min_games=${appliedFilters.minGames}`;
 
-        analyticsApi.get(url)
+        axios.get(url)
             .then(res => {
                 setUsers(res.data.items ?? []);
                 setTotal(res.data.total ?? 0);
@@ -53,7 +48,7 @@ function AdminPlayerArchives() {
 
     const handleDiscover = user => {
         setDiscovering(prev => ({ ...prev, [user.id]: true }));
-        analyticsApi.post(`/users/${user.id}/discover`)
+        axios.post(`/api/v1/admin/analytics/users/${user.id}/discover`)
             .then(res => {
                 toast.success(`Discover job queued for ${res.data.username} (task ${res.data.task_id.slice(0, 8)}…)`);
             })

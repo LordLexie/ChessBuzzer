@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import useAuth from '../hooks/useAuth';
 
 import DashboardWrapper from '../components/layouts/DashboardWrapper';
 import TopNav from '../components/layouts/TopNav';
@@ -14,6 +15,7 @@ import { Icons } from '../components/ui/Icons';
 function TournamentEdit() {
     const { tournamentId } = useParams();
     const navigate = useNavigate();
+    const { auth } = useAuth();
     const [tournament, setTournament] = useState(null);
     const [form, setForm] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,6 +29,10 @@ function TournamentEdit() {
         ])
             .then(([tRes, pRes]) => {
                 const t = tRes.data?.data;
+                if (t.organizer_id !== auth.user_id) {
+                    navigate(`/tournaments/${tournamentId}`);
+                    return;
+                }
                 setTournament(t);
                 setForm({
                     Name: t.name ?? '',
@@ -77,7 +83,7 @@ function TournamentEdit() {
                     toast.success('Tournament updated');
                     navigate('/tournaments');
                 })
-                .catch(err => toast.error(err.response?.data?.data ?? 'Failed to update tournament'))
+                .catch(err => toast.error(err.response?.data?.Data ?? 'Failed to update tournament'))
                 .finally(() => setSubmitting(false));
         };
 

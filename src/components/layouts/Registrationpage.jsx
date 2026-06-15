@@ -16,7 +16,7 @@ function RegistrationPage() {
     const handleResend = async () => {
         setResendStatus('sending');
         try {
-            await axios.post('http://127.0.0.1:8888/api/v1/auth/resend-verification', { Email: email });
+            await axios.post('api/v1/auth/resend-verification', { Email: email });
             setResendStatus('sent');
         } catch {
             setResendStatus('error');
@@ -33,7 +33,7 @@ function RegistrationPage() {
         const data = { username, email, password };
 
         try {
-            const res = await axios.post('http://127.0.0.1:8888/api/v1/user', data);
+            const res = await axios.post('api/v1/user', data);
 
             if (res.data.status === 'Ok') {
                 setSubmitted(true);
